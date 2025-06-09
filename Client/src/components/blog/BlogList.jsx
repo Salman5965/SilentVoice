@@ -1,0 +1,152 @@
+import React, { useEffect } from "react";
+import { BlogCard } from "./BlogCard";
+import { Pagination } from "@/components/shared/Pagination";
+import { useBlogStore } from "@/features/blogs/blogStore";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+
+export const BlogList = ({
+  variant = "grid",
+  showPagination = true,
+  pageSize = 12,
+}) => {
+  const {
+    blogs,
+    isLoading,
+    error,
+    pagination,
+    filters,
+    getBlogs,
+    setPage,
+    clearError,
+  } = useBlogStore();
+
+  useEffect(() => {
+    getBlogs({
+      page: pagination.page,
+      limit: pageSize,
+      ...filters,
+    });
+  }, [pagination.page, pageSize, filters]);
+
+  const handleRetry = () => {
+    clearError();
+    getBlogs({
+      page: pagination.page,
+      limit: pageSize,
+      ...filters,
+    });
+  };
+
+  const handlePageChange = (page) => {
+    setPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (isLoading && blogs?.length === 0) {
+    return <BlogListSkeleton variant={variant} />;
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription className="flex items-center justify-between">
+          <span>{error}</span>
+          <Button variant="outline" size="sm" onClick={handleRetry}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (blogs?.length > 0) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-semibold mb-2">No blogs found</h3>
+        <p className="text-muted-foreground">
+          {filters.search || filters.tags.length > 0 || filters.author
+            ? "Try adjusting your search criteria"
+            : "Be the first to write a blog post!"}
+        </p>
+      </div>
+    );
+  }
+
+  const getGridClasses = () => {
+    switch (variant) {
+      case "list":
+        return "space-y-4";
+      case "masonry":
+        return "columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6";
+      case "grid":
+      default:
+        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {isLoading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex items-center space-x-2 bg-background p-4 rounded-lg shadow-lg">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <span>Loading blogs...</span>
+          </div>
+        </div>
+      )}
+
+      <div className={getGridClasses()}>
+        {(blogs ?? []).map((blog) => (
+          <BlogCard
+            key={blog.id}
+            blog={blog}
+            variant={variant === "grid" && index === 0 ? "featured" : "default"}
+          />
+        ))}
+      </div>
+
+      {showPagination && pagination.totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const BlogListSkeleton = ({ variant }) => {
+  const getSkeletonClasses = () => {
+    switch (variant) {
+      case "list":
+        return "space-y-4";
+      case "masonry":
+        return "columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6";
+      case "grid":
+      default:
+        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
+    }
+  };
+
+  return (
+    <div className={getSkeletonClasses()}>
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div key={index} className="space-y-4">
+          <Skeleton className="aspect-video w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
