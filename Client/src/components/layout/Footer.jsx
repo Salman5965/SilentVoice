@@ -22,7 +22,7 @@ export const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://github.com"
+                href="https://github.com/bloghub"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -31,7 +31,7 @@ export const Footer = () => {
                 <Github className="h-5 w-5" />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://twitter.com/bloghub"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -40,7 +40,7 @@ export const Footer = () => {
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://linkedin.com/company/bloghub"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -79,20 +79,28 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to={ROUTES.ABOUT}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to={ROUTES.CONTACT}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to={ROUTES.HELP}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Help Center
+                </Link>
               </li>
             </ul>
           </div>
@@ -102,36 +110,36 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#"
+                <Link
+                  to={ROUTES.PRIVACY}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to={ROUTES.TERMS}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to={ROUTES.COOKIES}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Cookie Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to={ROUTES.GDPR}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  GDPR
-                </a>
+                  GDPR Rights
+                </Link>
               </li>
             </ul>
           </div>
@@ -141,9 +149,33 @@ export const Footer = () => {
           <p className="text-sm text-muted-foreground">
             © {currentYear} BlogHub. All rights reserved.
           </p>
-          <p className="text-sm text-muted-foreground mt-4 md:mt-0">
-            Made with ❤️ for the blogging community
-          </p>
+          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <p className="text-sm text-muted-foreground">
+              Made with ❤️ for the blogging community
+            </p>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+              <Link
+                to={ROUTES.PRIVACY}
+                className="hover:text-foreground transition-colors"
+              >
+                Privacy
+              </Link>
+              <span>•</span>
+              <Link
+                to={ROUTES.TERMS}
+                className="hover:text-foreground transition-colors"
+              >
+                Terms
+              </Link>
+              <span>•</span>
+              <Link
+                to={ROUTES.COOKIES}
+                className="hover:text-foreground transition-colors"
+              >
+                Cookies
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

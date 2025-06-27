@@ -1,4 +1,4 @@
-import  create  from "zustand";
+import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { blogService } from "@/services/blogService";
 import { PAGINATION } from "@/utils/constant";
@@ -35,21 +35,72 @@ export const useBlogStore = create(
             ...query,
             page: query?.page || pagination.page,
             limit: query?.limit || pagination.limit,
-            search: query?.search || filters.search,
+            search: query?.search !== undefined ? query.search : filters.search,
             tags: query?.tags || filters.tags,
             author: query?.author || filters.author,
           };
 
           const response = await blogService.getBlogs(mergedQuery);
 
+          // Handle different response structures
+          let blogs = [];
+          let paginationData = initialPagination;
+
+          if (response) {
+            // Handle case where response.data exists
+            if (response.data) {
+              blogs = Array.isArray(response.data)
+                ? response.data
+                : response.data.blogs
+                  ? response.data.blogs
+                  : [];
+              paginationData =
+                response.data.pagination ||
+                response.pagination ||
+                initialPagination;
+            }
+            // Handle case where response.blogs exists
+            else if (response.blogs) {
+              blogs = Array.isArray(response.blogs) ? response.blogs : [];
+              paginationData = response.pagination || initialPagination;
+            }
+            // Handle case where response is array directly
+            else if (Array.isArray(response)) {
+              blogs = response;
+            }
+            // Handle case where response has the data directly
+            else {
+              blogs = response.blogs || [];
+              paginationData = response.pagination || initialPagination;
+            }
+          }
+
           set({
-            blogs: response.data,
-            pagination: response.pagination,
+            blogs: blogs,
+            pagination: {
+              ...initialPagination,
+              ...paginationData,
+              page: mergedQuery.page,
+              limit: mergedQuery.limit,
+            },
             isLoading: false,
+            error: null,
           });
         } catch (error) {
+          console.error("Error fetching blogs:", error);
+
+          // Don't show network errors to users, just log them
+          const errorMessage =
+            error?.message?.includes("fetch") ||
+            error?.message?.includes("network") ||
+            error?.message?.includes("Failed to fetch")
+              ? null // Don't set error for network issues
+              : error instanceof Error
+                ? error.message
+                : "Failed to fetch blogs";
+
           set({
-            error: error instanceof Error ? error.message : "Failed to fetch blogs",
+            error: errorMessage,
             isLoading: false,
           });
         }
@@ -58,14 +109,33 @@ export const useBlogStore = create(
       getBlogBySlug: async (slug) => {
         try {
           set({ isLoading: true, error: null });
-          const blog = await blogService.getBlogBySlug(slug);
-          blogService.incrementViewCount(blog.id);
+          const response = await blogService.getBlogBySlug(slug);
+
+          let blog = null;
+          if (response?.data) {
+            blog = response.data;
+          } else if (response?.blog) {
+            blog = response.blog;
+          } else {
+            blog = response;
+          }
+
+          if (blog) {
+            // Increment view count
+            try {
+              await blogService.incrementViewCount(blog._id || blog.id);
+            } catch (viewError) {
+              console.warn("Failed to increment view count:", viewError);
+            }
+          }
+
           set({
             currentBlog: blog,
             isLoading: false,
           });
           return blog;
         } catch (error) {
+          console.error("Error fetching blog by slug:", error);
           set({
             error: error instanceof Error ? error.message : "Blog not found",
             isLoading: false,
@@ -78,13 +148,24 @@ export const useBlogStore = create(
       getBlogById: async (id) => {
         try {
           set({ isLoading: true, error: null });
-          const blog = await blogService.getBlogById(id);
+          const response = await blogService.getBlogById(id);
+
+          let blog = null;
+          if (response?.data) {
+            blog = response.data;
+          } else if (response?.blog) {
+            blog = response.blog;
+          } else {
+            blog = response;
+          }
+
           set({
             currentBlog: blog,
             isLoading: false,
           });
           return blog;
         } catch (error) {
+          console.error("Error fetching blog by ID:", error);
           set({
             error: error instanceof Error ? error.message : "Blog not found",
             isLoading: false,
@@ -97,40 +178,69 @@ export const useBlogStore = create(
       createBlog: async (blogData) => {
         try {
           set({ isLoading: true, error: null });
-          const blog = await blogService.createBlog(blogData);
-          const { blogs } = get();
-          set({
-            blogs: [blog, ...blogs],
-            currentBlog: blog,
-            isLoading: false,
-          });
+          const response = await blogService.createBlog(blogData);
+
+          let blog = null;
+          if (response?.data) {
+            blog = response.data.blog || response.data;
+          } else {
+            blog = response;
+          }
+
+          if (blog) {
+            const { blogs } = get();
+            set({
+              blogs: [blog, ...blogs],
+              currentBlog: blog,
+              isLoading: false,
+            });
+          }
+
           return blog;
         } catch (error) {
+          console.error("Error creating blog:", error);
           set({
-            error: error instanceof Error ? error.message : "Failed to create blog",
+            error:
+              error instanceof Error ? error.message : "Failed to create blog",
             isLoading: false,
           });
           throw error;
         }
       },
 
-      updateBlog: async (blogData) => {
+      updateBlog: async (id, blogData) => {
         try {
           set({ isLoading: true, error: null });
-          const updatedBlog = await blogService.updateBlog(blogData);
-          const { blogs, currentBlog } = get();
-          const updatedBlogs = blogs.map((blog) =>
-            blog.id === updatedBlog.id ? updatedBlog : blog
-          );
-          set({
-            blogs: updatedBlogs,
-            currentBlog: currentBlog?.id === updatedBlog.id ? updatedBlog : currentBlog,
-            isLoading: false,
-          });
+          const response = await blogService.updateBlog(id, blogData);
+
+          let updatedBlog = null;
+          if (response?.data) {
+            updatedBlog = response.data.blog || response.data;
+          } else {
+            updatedBlog = response;
+          }
+
+          if (updatedBlog) {
+            const { blogs, currentBlog } = get();
+            const updatedBlogs = blogs.map((blog) =>
+              (blog._id || blog.id) === (updatedBlog._id || updatedBlog.id)
+                ? updatedBlog
+                : blog,
+            );
+            set({
+              blogs: updatedBlogs,
+              currentBlog:
+                currentBlog?.id === updatedBlog.id ? updatedBlog : currentBlog,
+              isLoading: false,
+            });
+          }
+
           return updatedBlog;
         } catch (error) {
+          console.error("Error updating blog:", error);
           set({
-            error: error instanceof Error ? error.message : "Failed to update blog",
+            error:
+              error instanceof Error ? error.message : "Failed to update blog",
             isLoading: false,
           });
           throw error;
@@ -142,15 +252,22 @@ export const useBlogStore = create(
           set({ isLoading: true, error: null });
           await blogService.deleteBlog(id);
           const { blogs, currentBlog } = get();
-          const filteredBlogs = blogs.filter((blog) => blog.id !== id);
+          const filteredBlogs = blogs.filter(
+            (blog) => (blog._id || blog.id) !== id,
+          );
           set({
             blogs: filteredBlogs,
-            currentBlog: currentBlog?.id === id ? null : currentBlog,
+            currentBlog:
+              currentBlog && (currentBlog._id || currentBlog.id) === id
+                ? null
+                : currentBlog,
             isLoading: false,
           });
         } catch (error) {
+          console.error("Error deleting blog:", error);
           set({
-            error: error instanceof Error ? error.message : "Failed to delete blog",
+            error:
+              error instanceof Error ? error.message : "Failed to delete blog",
             isLoading: false,
           });
           throw error;
@@ -162,16 +279,24 @@ export const useBlogStore = create(
           const result = await blogService.likeBlog(id);
           const { blogs, currentBlog } = get();
           const updatedBlogs = blogs.map((blog) =>
-            blog.id === id ? { ...blog, likeCount: result.likeCount } : blog
+            (blog._id || blog.id) === id
+              ? { ...blog, likeCount: result.likeCount, isLiked: !blog.isLiked }
+              : blog,
           );
           set({
             blogs: updatedBlogs,
-            currentBlog: currentBlog?.id === id ? { ...currentBlog, likeCount: result.likeCount } : currentBlog,
+            currentBlog:
+              currentBlog && (currentBlog._id || currentBlog.id) === id
+                ? {
+                    ...currentBlog,
+                    likeCount: result.likeCount,
+                    isLiked: !currentBlog.isLiked,
+                  }
+                : currentBlog,
           });
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : "Failed to like blog",
-          });
+          console.error("Error liking blog:", error);
+          // Don't show like errors to users
         }
       },
 
@@ -180,16 +305,24 @@ export const useBlogStore = create(
           const result = await blogService.unlikeBlog(id);
           const { blogs, currentBlog } = get();
           const updatedBlogs = blogs.map((blog) =>
-            blog.id === id ? { ...blog, likeCount: result.likeCount } : blog
+            (blog._id || blog.id) === id
+              ? { ...blog, likeCount: result.likeCount, isLiked: false }
+              : blog,
           );
           set({
             blogs: updatedBlogs,
-            currentBlog: currentBlog?.id === id ? { ...currentBlog, likeCount: result.likeCount } : currentBlog,
+            currentBlog:
+              currentBlog && (currentBlog._id || currentBlog.id) === id
+                ? {
+                    ...currentBlog,
+                    likeCount: result.likeCount,
+                    isLiked: false,
+                  }
+                : currentBlog,
           });
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : "Failed to unlike blog",
-          });
+          console.error("Error unliking blog:", error);
+          // Don't show unlike errors to users
         }
       },
 
@@ -203,14 +336,40 @@ export const useBlogStore = create(
             limit: query?.limit || pagination.limit,
           };
           const response = await blogService.getUserBlogs(userId, mergedQuery);
+
+          let blogs = [];
+          let paginationData = initialPagination;
+
+          if (response?.data) {
+            blogs = Array.isArray(response.data)
+              ? response.data
+              : response.data.blogs
+                ? response.data.blogs
+                : [];
+            paginationData =
+              response.data.pagination ||
+              response.pagination ||
+              initialPagination;
+          } else {
+            blogs = response?.blogs || [];
+            paginationData = response?.pagination || initialPagination;
+          }
+
           set({
-            blogs: response.data,
-            pagination: response.pagination,
+            blogs: blogs,
+            pagination: {
+              ...initialPagination,
+              ...paginationData,
+            },
             isLoading: false,
           });
         } catch (error) {
+          console.error("Error fetching user blogs:", error);
           set({
-            error: error instanceof Error ? error.message : "Failed to fetch user blogs",
+            error:
+              error instanceof Error
+                ? error.message
+                : "Failed to fetch user blogs",
             isLoading: false,
           });
         }
@@ -251,6 +410,6 @@ export const useBlogStore = create(
     }),
     {
       name: "blog-store",
-    }
-  )
+    },
+  ),
 );

@@ -14,13 +14,27 @@ const INITIAL_STATE = {
 };
 
 export function useBlogEditor({ initialBlog, autoSave = true, onSave } = {}) {
-  const [title, setTitleState] = useState(initialBlog?.title || INITIAL_STATE.title);
-  const [content, setContentState] = useState(initialBlog?.content || INITIAL_STATE.content);
-  const [excerpt, setExcerptState] = useState(initialBlog?.excerpt || INITIAL_STATE.excerpt);
-  const [coverImage, setCoverImageState] = useState(initialBlog?.coverImage || INITIAL_STATE.coverImage);
-  const [category, setCategoryState] = useState(initialBlog?.category || INITIAL_STATE.category); // Added category state
-  const [tags, setTagsState] = useState(initialBlog?.tags || INITIAL_STATE.tags);
-  const [isPublished, setIsPublishedState] = useState(initialBlog?.isPublished || INITIAL_STATE.isPublished);
+  const [title, setTitleState] = useState(
+    initialBlog?.title || INITIAL_STATE.title,
+  );
+  const [content, setContentState] = useState(
+    initialBlog?.content || INITIAL_STATE.content,
+  );
+  const [excerpt, setExcerptState] = useState(
+    initialBlog?.excerpt || INITIAL_STATE.excerpt,
+  );
+  const [coverImage, setCoverImageState] = useState(
+    initialBlog?.coverImage || INITIAL_STATE.coverImage,
+  );
+  const [category, setCategoryState] = useState(
+    initialBlog?.category || INITIAL_STATE.category,
+  ); // Added category state
+  const [tags, setTagsState] = useState(
+    initialBlog?.tags || INITIAL_STATE.tags,
+  );
+  const [isPublished, setIsPublishedState] = useState(
+    initialBlog?.isPublished || INITIAL_STATE.isPublished,
+  );
 
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -42,66 +56,91 @@ export function useBlogEditor({ initialBlog, autoSave = true, onSave } = {}) {
     }
   }, DEBOUNCE_DELAY.AUTO_SAVE);
 
-  const setTitle = useCallback((newTitle) => {
-    setTitleState(newTitle);
-    setIsDirty(true);
-    debouncedSave();
-  }, [debouncedSave]);
+  const setTitle = useCallback(
+    (newTitle) => {
+      setTitleState(newTitle);
+      setIsDirty(true);
+      debouncedSave();
+    },
+    [debouncedSave],
+  );
 
-  const setContent = useCallback((newContent) => {
-    setContentState(newContent);
-    setIsDirty(true);
-    debouncedSave();
-  }, [debouncedSave]);
+  const setContent = useCallback(
+    (newContent) => {
+      setContentState(newContent);
+      setIsDirty(true);
+      debouncedSave();
+    },
+    [debouncedSave],
+  );
 
-  const setExcerpt = useCallback((newExcerpt) => {
-    setExcerptState(newExcerpt);
-    setIsDirty(true);
-    debouncedSave();
-  }, [debouncedSave]);
+  const setExcerpt = useCallback(
+    (newExcerpt) => {
+      setExcerptState(newExcerpt);
+      setIsDirty(true);
+      debouncedSave();
+    },
+    [debouncedSave],
+  );
 
-  const setCoverImage = useCallback((url) => {
-    setCoverImageState(url);
-    setIsDirty(true);
-    debouncedSave();
-  }, [debouncedSave]);
+  const setCoverImage = useCallback(
+    (url) => {
+      setCoverImageState(url);
+      setIsDirty(true);
+      debouncedSave();
+    },
+    [debouncedSave],
+  );
 
   // Added setCategory function
-  const setCategory = useCallback((newCategory) => {
-    console.log('Hook setCategory called with:', newCategory);
-    setCategoryState(newCategory);
-    setIsDirty(true);
-    debouncedSave();
-  }, [debouncedSave]);
+  const setCategory = useCallback(
+    (newCategory) => {
+      console.log("Hook setCategory called with:", newCategory);
+      setCategoryState(newCategory);
+      setIsDirty(true);
+      debouncedSave();
+    },
+    [debouncedSave],
+  );
 
-  const setTags = useCallback((newTags) => {
-    setTagsState(newTags);
-    setIsDirty(true);
-    debouncedSave();
-  }, [debouncedSave]);
+  const setTags = useCallback(
+    (newTags) => {
+      setTagsState(newTags);
+      setIsDirty(true);
+      debouncedSave();
+    },
+    [debouncedSave],
+  );
 
   const setIsPublished = useCallback((published) => {
     setIsPublishedState(published);
     setIsDirty(true);
   }, []);
 
-  const addTag = useCallback((tag) => {
-    const trimmedTag = tag.trim().toLowerCase();
-    if (trimmedTag && !tags.includes(trimmedTag)) {
-      setTags([...tags, trimmedTag]);
-    }
-  }, [tags, setTags]);
+  const addTag = useCallback(
+    (tag) => {
+      const trimmedTag = tag.trim().toLowerCase();
+      if (trimmedTag && !tags.includes(trimmedTag)) {
+        setTags([...tags, trimmedTag]);
+      }
+    },
+    [tags, setTags],
+  );
 
-  const removeTag = useCallback((tag) => {
-    setTags(tags.filter((t) => t !== tag));
-  }, [tags, setTags]);
+  const removeTag = useCallback(
+    (tag) => {
+      setTags(tags.filter((t) => t !== tag));
+    },
+    [tags, setTags],
+  );
 
   const generateExcerpt = useCallback(() => {
     if (!content) return;
 
     const plainText = content.replace(/<[^>]*>/g, "");
     const words = plainText.split(" ").slice(0, 25).join(" ");
-    const truncated = words.length > 150 ? words.substring(0, 150) + "..." : words;
+    const truncated =
+      words.length > 150 ? words.substring(0, 150) + "..." : words;
 
     setExcerpt(truncated);
   }, [content]);
@@ -122,7 +161,10 @@ export function useBlogEditor({ initialBlog, autoSave = true, onSave } = {}) {
       timestamp: new Date().toISOString(),
     };
 
-    localStorage.setItem(LOCAL_STORAGE_KEYS.DRAFT_BLOG, JSON.stringify(draftData));
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.DRAFT_BLOG,
+      JSON.stringify(draftData),
+    );
     setLastSaved(new Date());
   }, [title, content, excerpt, coverImage, category, tags]);
 
@@ -178,10 +220,54 @@ export function useBlogEditor({ initialBlog, autoSave = true, onSave } = {}) {
     }
 
     return baseData;
-  }, [title, content, excerpt, coverImage, category, tags, isPublished, initialBlog]);
+  }, [
+    title,
+    content,
+    excerpt,
+    coverImage,
+    category,
+    tags,
+    isPublished,
+    initialBlog,
+  ]);
+
+  const populateFromBlog = useCallback((blog) => {
+    if (!blog) return;
+
+    setTitleState(blog.title || "");
+    setContentState(blog.content || "");
+    setExcerptState(blog.excerpt || "");
+    setCoverImageState(blog.featuredImage || blog.coverImage || "");
+    setCategoryState(blog.category || "");
+    setTagsState(blog.tags || []);
+    setIsPublishedState(
+      blog.status === "published" || blog.isPublished || false,
+    );
+
+    // Update initial state ref for dirty checking
+    initialStateRef.current = {
+      title: blog.title || "",
+      content: blog.content || "",
+      excerpt: blog.excerpt || "",
+      coverImage: blog.featuredImage || blog.coverImage || "",
+      category: blog.category || "",
+      tags: blog.tags || [],
+      isPublished: blog.status === "published" || blog.isPublished || false,
+    };
+
+    setIsDirty(false);
+  }, []);
 
   useEffect(() => {
-    const current = { title, content, excerpt, coverImage, category, tags, isPublished }; // Added category
+    const current = {
+      title,
+      content,
+      excerpt,
+      coverImage,
+      category,
+      tags,
+      isPublished,
+    }; // Added category
     const initial = initialStateRef.current;
 
     const hasChanged =
@@ -234,5 +320,6 @@ export function useBlogEditor({ initialBlog, autoSave = true, onSave } = {}) {
 
     reset,
     getBlogData,
+    populateFromBlog,
   };
 }

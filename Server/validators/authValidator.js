@@ -112,10 +112,10 @@ export const validateUpdateProfile = [
     .withMessage("Bio cannot exceed 500 characters")
     .escape(),
 
-  body("avatar").optional().isURL().withMessage("Avatar must be a valid URL"),
+  body("avatar").optional({ checkFalsy: true }).isURL().withMessage("Avatar must be a valid URL"),
 
   body("socialLinks.twitter")
-    .optional()
+    .optional({ checkFalsy: true })
     .custom((value) => {
       if (
         value &&
@@ -127,7 +127,7 @@ export const validateUpdateProfile = [
     }),
 
   body("socialLinks.linkedin")
-    .optional()
+    .optional({ checkFalsy: true })
     .custom((value) => {
       if (
         value &&
@@ -139,7 +139,7 @@ export const validateUpdateProfile = [
     }),
 
   body("socialLinks.github")
-    .optional()
+    .optional({ checkFalsy: true })
     .custom((value) => {
       if (
         value &&
@@ -151,7 +151,7 @@ export const validateUpdateProfile = [
     }),
 
   body("socialLinks.website")
-    .optional()
+    .optional({ checkFalsy: true })
     .isURL({ require_protocol: true })
     .withMessage("Website must be a valid URL with protocol (http/https)"),
 

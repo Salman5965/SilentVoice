@@ -1,37 +1,67 @@
+
 // import { PAGINATION } from "@/utils/constant";
 // import apiService from "./api";
 
 // class BlogService {
 //   async getBlogs(query = {}) {
-//     const params = new URLSearchParams();
+//     try {
+//       const params = new URLSearchParams();
 
-//     params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
-//     params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
+//       params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
+//       params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
 
-//     if (query.search) params.append("search", query.search);
-//     if (query.author) params.append("author", query.author);
-//     if (query.isPublished !== undefined)
-//       params.append("isPublished", String(query.isPublished));
-//     if (query.sortBy) params.append("sortBy", query.sortBy);
-//     if (query.sortOrder) params.append("sortOrder", query.sortOrder);
+//       if (query.search) params.append("search", query.search);
+//       if (query.author) params.append("author", query.author);
+//       if (query.category) params.append("category", query.category);
+//       if (query.status) params.append("status", query.status);
+//       if (query.isPublished !== undefined)
+//         params.append("isPublished", String(query.isPublished));
+//       if (query.sortBy) params.append("sortBy", query.sortBy);
+//       if (query.sortOrder) params.append("sortOrder", query.sortOrder);
 
-//     if (query.tags?.length) {
-//       query.tags.forEach((tag) => params.append("tags[]", tag));
+//       if (query.tags?.length) {
+//         query.tags.forEach((tag) => params.append("tags", tag));
+//       }
+
+//       const response = await apiService.get(`/blogs?${params}`);
+
+//       if (response.status === "success") {
+//         return response.data;
+//       }
+
+//       throw new Error(response.message || "Failed to fetch blogs");
+//     } catch (error) {
+//       // Log network errors but don't expose them to users
+//       if (
+//         error.message?.includes("fetch") ||
+//         error.message?.includes("network") ||
+//         error.name === "TypeError"
+//       ) {
+//         console.error("Network error fetching blogs:", error);
+
+//         // Return empty data structure instead of throwing
+//         return {
+//           blogs: [],
+//           pagination: {
+//             currentPage: query.page || 1,
+//             totalPages: 0,
+//             totalBlogs: 0,
+//             hasNextPage: false,
+//             hasPrevPage: false,
+//             limit: query.limit || PAGINATION.BLOG_LIMIT,
+//           },
+//         };
+//       }
+
+//       // Re-throw non-network errors
+//       throw error;
 //     }
-
-//     const response = await apiService.get(`/blogs?${params}`);
-
-//     if (response.success) {
-//       return response.data;
-//     }
-
-//     throw new Error(response.message || "Failed to fetch blogs");
 //   }
 
 //   async getBlogBySlug(slug) {
 //     const response = await apiService.get(`/blogs/slug/${slug}`);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
@@ -41,7 +71,7 @@
 //   async getBlogById(id) {
 //     const response = await apiService.get(`/blogs/${id}`);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
@@ -51,18 +81,17 @@
 //   async createBlog(blogData) {
 //     const response = await apiService.post("/blogs", blogData);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
 //     throw new Error(response.message || "Failed to create blog");
 //   }
 
-//   async updateBlog(blogData) {
-//     const { id, ...updateData } = blogData;
+//   async updateBlog(id, updateData) {
 //     const response = await apiService.put(`/blogs/${id}`, updateData);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
@@ -72,15 +101,16 @@
 //   async deleteBlog(id) {
 //     const response = await apiService.delete(`/blogs/${id}`);
 
-//     if (!response.success) {
+//     if (response.status !== "success") {
 //       throw new Error(response.message || "Failed to delete blog");
 //     }
+//     return true;
 //   }
 
 //   async likeBlog(id) {
 //     const response = await apiService.post(`/blogs/${id}/like`);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
@@ -90,7 +120,7 @@
 //   async unlikeBlog(id) {
 //     const response = await apiService.delete(`/blogs/${id}/like`);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
@@ -113,19 +143,21 @@
 //     params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
 
 //     if (query.search) params.append("search", query.search);
+//     if (query.category) params.append("category", query.category);
+//     if (query.status) params.append("status", query.status);
 //     if (query.isPublished !== undefined)
 //       params.append("isPublished", String(query.isPublished));
 //     if (query.sortBy) params.append("sortBy", query.sortBy);
 //     if (query.sortOrder) params.append("sortOrder", query.sortOrder);
 
 //     if (query.tags?.length) {
-//       query.tags.forEach((tag) => params.append("tags[]", tag));
+//       query.tags.forEach((tag) => params.append("tags", tag));
 //     }
 
 //     const endpoint = userId ? `/blogs/user/${userId}` : "/blogs/my";
 //     const response = await apiService.get(`${endpoint}?${params}`);
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data;
 //     }
 
@@ -133,13 +165,52 @@
 //   }
 
 //   async getTags() {
-//     const response = await apiService.get("/blogs/tags");
+//     try {
+//       const response = await apiService.get("/blogs/tags");
 
-//     if (response.success) {
-//       return response.data;
+//       if (response.status === "success") {
+//         return response.data;
+//       }
+
+//       throw new Error(response.message || "Failed to fetch tags");
+//     } catch (error) {
+//       // If endpoint doesn't exist, return common tags
+//       console.warn("Tags endpoint not available, returning default tags");
+//       return [
+//         "React",
+//         "JavaScript",
+//         "Node.js",
+//         "CSS",
+//         "TypeScript",
+//         "API",
+//         "Performance",
+//         "Tutorial",
+//       ];
 //     }
+//   }
 
-//     throw new Error(response.message || "Failed to fetch tags");
+//   async getCategories() {
+//     try {
+//       const response = await apiService.get("/blogs/categories");
+
+//       if (response.status === "success") {
+//         return response.data;
+//       }
+
+//       throw new Error(response.message || "Failed to fetch categories");
+//     } catch (error) {
+//       // If endpoint doesn't exist, return common categories
+//       console.warn(
+//         "Categories endpoint not available, returning default categories",
+//       );
+//       return [
+//         "Technology",
+//         "Programming",
+//         "Web Development",
+//         "Design",
+//         "Tutorial",
+//       ];
+//     }
 //   }
 
 //   async uploadImage(file) {
@@ -152,11 +223,80 @@
 //       },
 //     });
 
-//     if (response.success) {
+//     if (response.status === "success") {
 //       return response.data.url;
 //     }
 
 //     throw new Error(response.message || "Failed to upload image");
+//   }
+
+//   // Additional methods for blog management
+
+//   async publishBlog(id) {
+//     const response = await apiService.put(`/blogs/${id}/publish`);
+
+//     if (response.status === "success") {
+//       return response.data;
+//     }
+
+//     throw new Error(response.message || "Failed to publish blog");
+//   }
+
+//   async unpublishBlog(id) {
+//     const response = await apiService.put(`/blogs/${id}/unpublish`);
+
+//     if (response.status === "success") {
+//       return response.data;
+//     }
+
+//     throw new Error(response.message || "Failed to unpublish blog");
+//   }
+
+//   async getDraftBlogs(query = {}) {
+//     return this.getBlogs({ ...query, status: "draft" });
+//   }
+
+//   async getPublishedBlogs(query = {}) {
+//     return this.getBlogs({ ...query, status: "published" });
+//   }
+
+//   // Method to get blogs for the current user
+//   async getMyBlogs(query = {}) {
+//     const params = new URLSearchParams();
+
+//     params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
+//     params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
+
+//     if (query.search) params.append("search", query.search);
+//     if (query.status) params.append("status", query.status);
+//     if (query.sortBy) params.append("sortBy", query.sortBy);
+//     if (query.sortOrder) params.append("sortOrder", query.sortOrder);
+
+//     try {
+//       const response = await apiService.get(`/blogs/my-blogs?${params}`);
+
+//       if (response.status === "success") {
+//         return response.data;
+//       }
+
+//       throw new Error(response.message || "Failed to fetch my blogs");
+//     } catch (error) {
+//       // If /blogs/my-blogs endpoint doesn't exist, fall back to using author filter
+//       console.warn("My blogs endpoint not available, using author filter");
+
+//       // Get current user to use as author filter
+//       try {
+//         const userResponse = await apiService.get("/auth/profile");
+//         if (userResponse.status === "success") {
+//           const userId = userResponse.data.user._id;
+//           return this.getBlogs({ ...query, author: userId });
+//         }
+//       } catch (userError) {
+//         console.error("Failed to get current user for author filter");
+//       }
+
+//       throw error;
+//     }
 //   }
 // }
 
@@ -172,92 +312,64 @@ import apiService from "./api";
 
 class BlogService {
   async getBlogs(query = {}) {
-    const params = new URLSearchParams();
+    try {
+      const params = new URLSearchParams();
 
-    params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
-    params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
+      params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
+      params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
 
-    if (query.search) params.append("search", query.search);
-    if (query.author) params.append("author", query.author);
-    if (query.category) params.append("category", query.category);
-    if (query.isPublished !== undefined)
-      params.append("isPublished", String(query.isPublished));
-    if (query.sortBy) params.append("sortBy", query.sortBy);
-    if (query.sortOrder) params.append("sortOrder", query.sortOrder);
+      if (query.search) params.append("search", query.search);
+      if (query.author) params.append("author", query.author);
+      if (query.category) params.append("category", query.category);
+      if (query.status) params.append("status", query.status);
+      if (query.isPublished !== undefined)
+        params.append("isPublished", String(query.isPublished));
+      if (query.sortBy) params.append("sortBy", query.sortBy);
+      if (query.sortOrder) params.append("sortOrder", query.sortOrder);
 
-    // if (query.tags?.length) {
-    //   query.tags.forEach((tag) => params.append("tags[]", tag));
-    // }
+      if (query.tags?.length) {
+        query.tags.forEach((tag) => params.append("tags", tag));
+      }
 
-    // const response = await apiService.get(`/blogs?${params}`);
-    const response = await apiService.get('/blogs');
+      const response = await apiService.get(`/blogs?${params}`);
 
-    if (response.status === "success") {
-      return response.data;
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to fetch blogs");
+    } catch (error) {
+      // Log network errors but don't expose them to users
+      if (
+        error.message?.includes("fetch") ||
+        error.message?.includes("network") ||
+        error.name === "TypeError"
+      ) {
+        console.error("Network error fetching blogs:", error);
+
+        // Return empty data structure instead of throwing
+        return {
+          blogs: [],
+          pagination: {
+            currentPage: query.page || 1,
+            totalPages: 0,
+            totalBlogs: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: query.limit || PAGINATION.BLOG_LIMIT,
+          },
+        };
+      }
+
+      // Re-throw non-network errors
+      throw error;
     }
-
-    throw new Error(response.message || "Failed to fetch blogs");
-  }
-
-  // Get blogs without any tag filtering
-  async getBlogsWithoutTags(query = {}) {
-    const params = new URLSearchParams();
-
-    params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
-    params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
-
-    if (query.search) params.append("search", query.search);
-    if (query.author) params.append("author", query.author);
-    if (query.category) params.append("category", query.category);
-    if (query.isPublished !== undefined)
-      params.append("isPublished", String(query.isPublished));
-    if (query.sortBy) params.append("sortBy", query.sortBy);
-    if (query.sortOrder) params.append("sortOrder", query.sortOrder);
-
-    // Explicitly exclude tags from the query
-    params.append("excludeTags", "true");
-
-    const response = await apiService.get(`/blogs?${params}`);
-
-    if (response.success) {
-      return response.data;
-    }
-
-    throw new Error(response.message || "Failed to fetch blogs without tags");
-  }
-
-  // Get blogs by category
-  async getBlogsByCategory(category, query = {}) {
-    const params = new URLSearchParams();
-
-    params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
-    params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
-    params.append("category", category);
-
-    if (query.search) params.append("search", query.search);
-    if (query.author) params.append("author", query.author);
-    if (query.isPublished !== undefined)
-      params.append("isPublished", String(query.isPublished));
-    if (query.sortBy) params.append("sortBy", query.sortBy);
-    if (query.sortOrder) params.append("sortOrder", query.sortOrder);
-
-    if (query.tags?.length) {
-      query.tags.forEach((tag) => params.append("tags[]", tag));
-    }
-
-    const response = await apiService.get(`/blogs/category/${category}?${params}`);
-
-    if (response.success) {
-      return response.data;
-    }
-
-    throw new Error(response.message || "Failed to fetch blogs by category");
   }
 
   async getBlogBySlug(slug) {
-    const response = await apiService.get(`/blogs/slug/${slug}`);
+    const response = await apiService.get(`/blogs/${slug}`);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
@@ -267,7 +379,7 @@ class BlogService {
   async getBlogById(id) {
     const response = await apiService.get(`/blogs/${id}`);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
@@ -277,18 +389,17 @@ class BlogService {
   async createBlog(blogData) {
     const response = await apiService.post("/blogs", blogData);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
     throw new Error(response.message || "Failed to create blog");
   }
 
-  async updateBlog(blogData) {
-    const { id, ...updateData } = blogData;
+  async updateBlog(id, updateData) {
     const response = await apiService.put(`/blogs/${id}`, updateData);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
@@ -298,15 +409,16 @@ class BlogService {
   async deleteBlog(id) {
     const response = await apiService.delete(`/blogs/${id}`);
 
-    if (!response.success) {
+    if (response.status !== "success") {
       throw new Error(response.message || "Failed to delete blog");
     }
+    return true;
   }
 
   async likeBlog(id) {
     const response = await apiService.post(`/blogs/${id}/like`);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
@@ -316,7 +428,7 @@ class BlogService {
   async unlikeBlog(id) {
     const response = await apiService.delete(`/blogs/${id}/like`);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
@@ -340,19 +452,20 @@ class BlogService {
 
     if (query.search) params.append("search", query.search);
     if (query.category) params.append("category", query.category);
+    if (query.status) params.append("status", query.status);
     if (query.isPublished !== undefined)
       params.append("isPublished", String(query.isPublished));
     if (query.sortBy) params.append("sortBy", query.sortBy);
     if (query.sortOrder) params.append("sortOrder", query.sortOrder);
 
     if (query.tags?.length) {
-      query.tags.forEach((tag) => params.append("tags[]", tag));
+      query.tags.forEach((tag) => params.append("tags", tag));
     }
 
     const endpoint = userId ? `/blogs/user/${userId}` : "/blogs/my";
     const response = await apiService.get(`${endpoint}?${params}`);
 
-    if (response.success) {
+    if (response.status === "success") {
       return response.data;
     }
 
@@ -360,23 +473,52 @@ class BlogService {
   }
 
   async getTags() {
-    const response = await apiService.get("/blogs/tags");
+    try {
+      const response = await apiService.get("/blogs/tags");
 
-    if (response.success) {
-      return response.data;
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to fetch tags");
+    } catch (error) {
+      // If endpoint doesn't exist, return common tags
+      console.warn("Tags endpoint not available, returning default tags");
+      return [
+        "React",
+        "JavaScript",
+        "Node.js",
+        "CSS",
+        "TypeScript",
+        "API",
+        "Performance",
+        "Tutorial",
+      ];
     }
-
-    throw new Error(response.message || "Failed to fetch tags");
   }
 
   async getCategories() {
-    const response = await apiService.get("/blogs/categories");
+    try {
+      const response = await apiService.get("/blogs/categories");
 
-    if (response.success) {
-      return response.data;
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to fetch categories");
+    } catch (error) {
+      // If endpoint doesn't exist, return common categories
+      console.warn(
+        "Categories endpoint not available, returning default categories",
+      );
+      return [
+        "Technology",
+        "Programming",
+        "Web Development",
+        "Design",
+        "Tutorial",
+      ];
     }
-
-    throw new Error(response.message || "Failed to fetch categories");
   }
 
   async uploadImage(file) {
@@ -394,6 +536,75 @@ class BlogService {
     }
 
     throw new Error(response.message || "Failed to upload image");
+  }
+
+  // Additional methods for blog management
+
+  async publishBlog(id) {
+    const response = await apiService.put(`/blogs/${id}/publish`);
+
+    if (response.status === "success") {
+      return response.data;
+    }
+
+    throw new Error(response.message || "Failed to publish blog");
+  }
+
+  async unpublishBlog(id) {
+    const response = await apiService.put(`/blogs/${id}/unpublish`);
+
+    if (response.status === "success") {
+      return response.data;
+    }
+
+    throw new Error(response.message || "Failed to unpublish blog");
+  }
+
+  async getDraftBlogs(query = {}) {
+    return this.getBlogs({ ...query, status: "draft" });
+  }
+
+  async getPublishedBlogs(query = {}) {
+    return this.getBlogs({ ...query, status: "published" });
+  }
+
+  // Method to get blogs for the current user
+  async getMyBlogs(query = {}) {
+    const params = new URLSearchParams();
+
+    params.append("page", String(query.page || PAGINATION.DEFAULT_PAGE));
+    params.append("limit", String(query.limit || PAGINATION.BLOG_LIMIT));
+
+    if (query.search) params.append("search", query.search);
+    if (query.status) params.append("status", query.status);
+    if (query.sortBy) params.append("sortBy", query.sortBy);
+    if (query.sortOrder) params.append("sortOrder", query.sortOrder);
+
+    try {
+      const response = await apiService.get(`/blogs/my-blogs?${params}`);
+
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to fetch my blogs");
+    } catch (error) {
+      // If /blogs/my-blogs endpoint doesn't exist, fall back to using author filter
+      console.warn("My blogs endpoint not available, using author filter");
+
+      // Get current user to use as author filter
+      try {
+        const userResponse = await apiService.get("/auth/profile");
+        if (userResponse.status === "success") {
+          const userId = userResponse.data.user._id;
+          return this.getBlogs({ ...query, author: userId });
+        }
+      } catch (userError) {
+        console.error("Failed to get current user for author filter");
+      }
+
+      throw error;
+    }
   }
 }
 

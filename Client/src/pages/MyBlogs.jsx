@@ -1,25 +1,806 @@
-import React, { useState, useEffect, useRef } from "react";
+
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { PageWrapper } from "@/components/layout/PageWrapper";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Button } from "@/components/ui/button";
+// import { Badge } from "@/components/ui/badge";
+// import { Input } from "@/components/ui/input";
+// import { Alert, AlertDescription } from "@/components/ui/alert";
+// import { useToast } from "@/hooks/use-toast";
+// import { useAuthContext } from "@/contexts/AuthContext";
+// import { blogService } from "@/services/blogService";
+// import {
+//   Search,
+//   Filter,
+//   Grid,
+//   List,
+//   X,
+//   Eye,
+//   Heart,
+//   MessageCircle,
+//   Calendar,
+//   Clock,
+//   Edit3,
+//   Trash2,
+//   Plus,
+//   MoreVertical,
+//   ExternalLink,
+//   Copy,
+//   Share2,
+//   Loader2,
+//   AlertCircle,
+//   BookOpen,
+//   FileText,
+//   Globe,
+// } from "lucide-react";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+// } from "@/components/ui/alert-dialog";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+
+// const LoadingSkeleton = () => (
+//   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//     {[...Array(6)].map((_, i) => (
+//       <Card key={i} className="h-full">
+//         <div className="aspect-video w-full bg-muted animate-pulse rounded-t-lg" />
+//         <CardHeader>
+//           <div className="flex items-center justify-between mb-2">
+//             <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+//             <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+//           </div>
+//           <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+//         </CardHeader>
+//         <CardContent className="pt-0">
+//           <div className="space-y-2 mb-4">
+//             <div className="h-4 w-full bg-muted animate-pulse rounded" />
+//             <div className="h-4 w-2/3 bg-muted animate-pulse rounded" />
+//           </div>
+//           <div className="flex gap-2 mb-4">
+//             <div className="h-6 w-12 bg-muted animate-pulse rounded" />
+//             <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+//           </div>
+//           <div className="flex items-center justify-between">
+//             <div className="h-10 w-24 bg-muted animate-pulse rounded" />
+//             <div className="h-10 w-20 bg-muted animate-pulse rounded" />
+//           </div>
+//         </CardContent>
+//       </Card>
+//     ))}
+//   </div>
+// );
+
+// const BlogCard = ({
+//   blog,
+//   onEdit,
+//   onDelete,
+//   onDuplicate,
+//   viewMode = "grid",
+// }) => {
+//   const navigate = useNavigate();
+//   const { toast } = useToast();
+//   const [copied, setCopied] = useState(false);
+
+//   const formatDate = (dateString) => {
+//     return new Date(dateString).toLocaleDateString("en-US", {
+//       year: "numeric",
+//       month: "short",
+//       day: "numeric",
+//     });
+//   };
+
+//   const getStatusColor = (status) => {
+//     switch (status) {
+//       case "published":
+//         return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300";
+//       case "draft":
+//         return "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300";
+//       default:
+//         return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300";
+//     }
+//   };
+
+//   const copyToClipboard = async (text) => {
+//     try {
+//       await navigator.clipboard.writeText(text);
+//       setCopied(true);
+//       toast({
+//         title: "Success",
+//         description: "Link copied to clipboard!",
+//       });
+//       setTimeout(() => setCopied(false), 2000);
+//     } catch (error) {
+//       toast({
+//         title: "Error",
+//         description: "Failed to copy link",
+//         variant: "destructive",
+//       });
+//     }
+//   };
+
+//   const blogUrl = `${window.location.origin}/blog/${blog.slug}`;
+
+//   if (viewMode === "list") {
+//     return (
+//       <Card className="hover:shadow-md transition-shadow">
+//         <CardContent className="p-6">
+//           <div className="flex items-center gap-4">
+//             <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+//               <img
+//                 src={
+//                   blog.featuredImage || blog.image || "/api/placeholder/80/80"
+//                 }
+//                 alt={blog.title}
+//                 className="w-full h-full object-cover"
+//               />
+//             </div>
+
+//             <div className="flex-1 min-w-0">
+//               <div className="flex items-start justify-between mb-2">
+//                 <h3 className="font-semibold text-lg line-clamp-1">
+//                   {blog.title}
+//                 </h3>
+//                 <DropdownMenu>
+//                   <DropdownMenuTrigger asChild>
+//                     <Button variant="ghost" size="sm">
+//                       <MoreVertical className="h-4 w-4" />
+//                     </Button>
+//                   </DropdownMenuTrigger>
+//                   <DropdownMenuContent align="end">
+//                     <DropdownMenuItem onClick={() => onEdit(blog._id)}>
+//                       <Edit3 className="h-4 w-4 mr-2" />
+//                       Edit
+//                     </DropdownMenuItem>
+//                     <DropdownMenuItem onClick={() => copyToClipboard(blogUrl)}>
+//                       <Copy className="h-4 w-4 mr-2" />
+//                       Copy Link
+//                     </DropdownMenuItem>
+//                     <DropdownMenuItem onClick={() => onDuplicate(blog._id)}>
+//                       <FileText className="h-4 w-4 mr-2" />
+//                       Duplicate
+//                     </DropdownMenuItem>
+//                     <DropdownMenuItem
+//                       onClick={() => onDelete(blog._id)}
+//                       className="text-red-600"
+//                     >
+//                       <Trash2 className="h-4 w-4 mr-2" />
+//                       Delete
+//                     </DropdownMenuItem>
+//                   </DropdownMenuContent>
+//                 </DropdownMenu>
+//               </div>
+
+//               <div className="flex items-center gap-4 mb-3">
+//                 <Badge className={getStatusColor(blog.status)}>
+//                   {blog.status}
+//                 </Badge>
+//                 <span className="text-sm text-muted-foreground">
+//                   {formatDate(blog.publishedAt || blog.createdAt)}
+//                 </span>
+//               </div>
+
+//               <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+//                 {blog.excerpt || blog.description}
+//               </p>
+
+//               <div className="flex items-center justify-between">
+//                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+//                   <div className="flex items-center">
+//                     <Eye className="h-4 w-4 mr-1" />
+//                     {(blog.views || 0).toLocaleString()}
+//                   </div>
+//                   <div className="flex items-center">
+//                     <Heart className="h-4 w-4 mr-1" />
+//                     {blog.likeCount || blog.likes?.length || 0}
+//                   </div>
+//                   <div className="flex items-center">
+//                     <MessageCircle className="h-4 w-4 mr-1" />
+//                     {blog.commentsCount || 0}
+//                   </div>
+//                   <div className="flex items-center">
+//                     <Clock className="h-4 w-4 mr-1" />
+//                     {blog.readTime || 5} min
+//                   </div>
+//                 </div>
+
+//                 <div className="flex gap-2">
+//                   {blog.status === "published" && (
+//                     <Button
+//                       variant="outline"
+//                       size="sm"
+//                       onClick={() =>
+//                         window.open(`/blog/${blog.slug}`, "_blank")
+//                       }
+//                     >
+//                       <ExternalLink className="h-4 w-4" />
+//                     </Button>
+//                   )}
+//                   <Button
+//                     variant="outline"
+//                     size="sm"
+//                     onClick={() =>
+//                       navigate(`${ROUTES.EDIT_BLOG}/${blog._id || blog.id}`)
+//                     }
+//                     className="flex items-center gap-2"
+//                   >
+//                     <Edit className="h-4 w-4" />
+//                     Edit
+//                   </Button>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </CardContent>
+//       </Card>
+//     );
+//   }
+
+//   return (
+//     <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+//       <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+//         <img
+//           src={blog.featuredImage || blog.image || "/api/placeholder/400/225"}
+//           alt={blog.title}
+//           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+//         />
+//       </div>
+//       <CardHeader>
+//         <div className="flex items-center justify-between mb-2">
+//           <Badge className={getStatusColor(blog.status)}>{blog.status}</Badge>
+//           <DropdownMenu>
+//             <DropdownMenuTrigger asChild>
+//               <Button variant="ghost" size="sm">
+//                 <MoreVertical className="h-4 w-4" />
+//               </Button>
+//             </DropdownMenuTrigger>
+//             <DropdownMenuContent align="end">
+//               <DropdownMenuItem onClick={() => onEdit(blog._id)}>
+//                 <Edit3 className="h-4 w-4 mr-2" />
+//                 Edit
+//               </DropdownMenuItem>
+//               <DropdownMenuItem onClick={() => copyToClipboard(blogUrl)}>
+//                 <Copy className="h-4 w-4 mr-2" />
+//                 Copy Link
+//               </DropdownMenuItem>
+//               <DropdownMenuItem onClick={() => onDuplicate(blog._id)}>
+//                 <FileText className="h-4 w-4 mr-2" />
+//                 Duplicate
+//               </DropdownMenuItem>
+//               <DropdownMenuItem
+//                 onClick={() => onDelete(blog._id)}
+//                 className="text-red-600"
+//               >
+//                 <Trash2 className="h-4 w-4 mr-2" />
+//                 Delete
+//               </DropdownMenuItem>
+//             </DropdownMenuContent>
+//           </DropdownMenu>
+//         </div>
+//         <CardTitle className="text-xl leading-tight line-clamp-2">
+//           {blog.title}
+//         </CardTitle>
+//       </CardHeader>
+//       <CardContent className="pt-0">
+//         <p className="text-muted-foreground mb-4 line-clamp-3">
+//           {blog.excerpt || blog.description}
+//         </p>
+
+//         <div className="flex flex-wrap gap-1 mb-4">
+//           {(blog.tags || []).slice(0, 3).map((tag) => (
+//             <Badge key={tag} variant="outline" className="text-xs">
+//               {tag}
+//             </Badge>
+//           ))}
+//           {blog.tags?.length > 3 && (
+//             <Badge variant="outline" className="text-xs">
+//               +{blog.tags.length - 3}
+//             </Badge>
+//           )}
+//         </div>
+
+//         <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+//           <div className="flex items-center space-x-4">
+//             <div className="flex items-center">
+//               <Calendar className="h-4 w-4 mr-1" />
+//               {formatDate(blog.publishedAt || blog.createdAt)}
+//             </div>
+//             <div className="flex items-center">
+//               <Clock className="h-4 w-4 mr-1" />
+//               {blog.readTime || 5} min
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+//           <div className="flex items-center space-x-4">
+//             <div className="flex items-center">
+//               <Eye className="h-4 w-4 mr-1" />
+//               {(blog.views || 0).toLocaleString()}
+//             </div>
+//             <div className="flex items-center">
+//               <Heart className="h-4 w-4 mr-1" />
+//               {blog.likeCount || blog.likes?.length || 0}
+//             </div>
+//             <div className="flex items-center">
+//               <MessageCircle className="h-4 w-4 mr-1" />
+//               {blog.commentsCount || 0}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex items-center justify-between gap-2">
+//           <Button
+//             variant="outline"
+//             className="flex-1"
+//             onClick={() => onEdit(blog._id)}
+//           >
+//             <Edit3 className="h-4 w-4 mr-2" />
+//             Edit
+//           </Button>
+//           {blog.status === "published" && (
+//             <Button
+//               variant="outline"
+//               onClick={() => window.open(`/blog/${blog.slug}`, "_blank")}
+//             >
+//               <ExternalLink className="h-4 w-4" />
+//             </Button>
+//           )}
+//         </div>
+//       </CardContent>
+//     </Card>
+//   );
+// };
+
+// export const MyBlogs = () => {
+//   const navigate = useNavigate();
+//   const { user } = useAuthContext();
+//   const { toast } = useToast();
+
+//   // State management
+//   const [blogs, setBlogs] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [selectedStatus, setSelectedStatus] = useState("all");
+//   const [viewMode, setViewMode] = useState("grid");
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [totalPages, setTotalPages] = useState(1);
+//   const [totalBlogs, setTotalBlogs] = useState(0);
+//   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+//   const [blogToDelete, setBlogToDelete] = useState(null);
+
+//   const loadBlogs = async (
+//     page = 1,
+//     search = searchTerm,
+//     status = selectedStatus,
+//   ) => {
+//     if (!user?._id) return;
+
+//     try {
+//       setLoading(true);
+//       setError(null);
+
+//       const query = {
+//         page,
+//         limit: 12,
+//         author: user._id,
+//         sortBy: "createdAt",
+//         sortOrder: "desc",
+//       };
+
+//       if (search) {
+//         query.search = search;
+//       }
+
+//       if (status && status !== "all") {
+//         query.status = status;
+//       }
+
+//       const response = await blogService.getMyBlogs(query);
+
+//       const blogsData = response.blogs || response.data || [];
+//       const pagination = response.pagination || {};
+
+//       setBlogs(blogsData);
+//       setTotalPages(
+//         pagination.totalPages ||
+//           Math.ceil((pagination.total || blogsData.length) / 12),
+//       );
+//       setTotalBlogs(pagination.total || blogsData.length);
+//       setCurrentPage(pagination.page || page);
+//     } catch (err) {
+//       setError(err.message || "Failed to load blogs. Please try again later.");
+//       console.error("Error fetching blogs:", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (user?._id) {
+//       loadBlogs();
+//     }
+//   }, [user]);
+
+//   const handleSearch = (value) => {
+//     setSearchTerm(value);
+//     setCurrentPage(1);
+//     loadBlogs(1, value, selectedStatus);
+//   };
+
+//   const handleStatusChange = (status) => {
+//     setSelectedStatus(status);
+//     setCurrentPage(1);
+//     loadBlogs(1, searchTerm, status);
+//   };
+
+//   const handlePageChange = (page) => {
+//     setCurrentPage(page);
+//     loadBlogs(page, searchTerm, selectedStatus);
+//     window.scrollTo({ top: 0, behavior: "smooth" });
+//   };
+
+//   const handleEdit = (blogId) => {
+//     navigate(`/edit/${blogId}`);
+//   };
+
+//   const handleDelete = (blogId) => {
+//     setBlogToDelete(blogId);
+//     setDeleteDialogOpen(true);
+//   };
+
+//   const confirmDelete = async () => {
+//     if (!blogToDelete) return;
+
+//     try {
+//       await blogService.deleteBlog(blogToDelete);
+//       setBlogs((prev) => prev.filter((blog) => blog._id !== blogToDelete));
+//       setTotalBlogs((prev) => prev - 1);
+
+//       toast({
+//         title: "Success",
+//         description: "Blog deleted successfully",
+//       });
+//     } catch (error) {
+//       toast({
+//         title: "Error",
+//         description: error.message || "Failed to delete blog",
+//         variant: "destructive",
+//       });
+//     } finally {
+//       setDeleteDialogOpen(false);
+//       setBlogToDelete(null);
+//     }
+//   };
+
+//   const handleDuplicate = async (blogId) => {
+//     try {
+//       const blogToClone = blogs.find((blog) => blog._id === blogId);
+//       if (!blogToClone) return;
+
+//       const duplicatedBlog = {
+//         title: `${blogToClone.title} (Copy)`,
+//         content: blogToClone.content,
+//         excerpt: blogToClone.excerpt,
+//         tags: blogToClone.tags,
+//         category: blogToClone.category,
+//         status: "draft",
+//       };
+
+//       const response = await blogService.createBlog(duplicatedBlog);
+
+//       toast({
+//         title: "Success",
+//         description: "Blog duplicated successfully",
+//       });
+
+//       // Refresh blogs list
+//       loadBlogs(currentPage, searchTerm, selectedStatus);
+//     } catch (error) {
+//       toast({
+//         title: "Error",
+//         description: error.message || "Failed to duplicate blog",
+//         variant: "destructive",
+//       });
+//     }
+//   };
+
+//   if (error && blogs.length === 0) {
+//     return (
+//       <PageWrapper className="py-8">
+//         <Alert variant="destructive" className="max-w-2xl mx-auto">
+//           <AlertCircle className="h-4 w-4" />
+//           <AlertDescription>{error}</AlertDescription>
+//         </Alert>
+//         <div className="text-center mt-4">
+//           <Button onClick={() => loadBlogs()} variant="outline">
+//             Try Again
+//           </Button>
+//         </div>
+//       </PageWrapper>
+//     );
+//   }
+
+//   return (
+//     <PageWrapper className="py-8">
+//       <div className="max-w-7xl mx-auto">
+//         {/* Header */}
+//         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+//           <div>
+//             <h1 className="text-4xl font-bold mb-2">My Blogs</h1>
+//             <p className="text-muted-foreground">
+//               Manage and organize your blog posts
+//             </p>
+//           </div>
+//           <Button onClick={() => navigate("/create")} className="mt-4 sm:mt-0">
+//             <Plus className="h-4 w-4 mr-2" />
+//             Create New Blog
+//           </Button>
+//         </div>
+
+//         {/* Filters and Search */}
+//         <div className="flex flex-col sm:flex-row gap-4 mb-6">
+//           <div className="relative flex-1">
+//             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+//             <Input
+//               placeholder="Search your blogs..."
+//               value={searchTerm}
+//               onChange={(e) => handleSearch(e.target.value)}
+//               className="pl-10"
+//             />
+//           </div>
+
+//           <div className="flex items-center gap-2">
+//             <Filter className="h-4 w-4 text-muted-foreground" />
+//             <Select value={selectedStatus} onValueChange={handleStatusChange}>
+//               <SelectTrigger className="w-40">
+//                 <SelectValue placeholder="All Status" />
+//               </SelectTrigger>
+//               <SelectContent>
+//                 <SelectItem value="all">All Status</SelectItem>
+//                 <SelectItem value="published">Published</SelectItem>
+//                 <SelectItem value="draft">Draft</SelectItem>
+//               </SelectContent>
+//             </Select>
+
+//             <div className="flex border rounded-md">
+//               <Button
+//                 variant={viewMode === "grid" ? "default" : "ghost"}
+//                 size="sm"
+//                 onClick={() => setViewMode("grid")}
+//                 className="rounded-r-none"
+//               >
+//                 <Grid className="h-4 w-4" />
+//               </Button>
+//               <Button
+//                 variant={viewMode === "list" ? "default" : "ghost"}
+//                 size="sm"
+//                 onClick={() => setViewMode("list")}
+//                 className="rounded-l-none"
+//               >
+//                 <List className="h-4 w-4" />
+//               </Button>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Results Summary */}
+//         {!loading && (
+//           <div className="mb-6">
+//             <p className="text-muted-foreground">
+//               Showing {blogs.length} of {totalBlogs} blog
+//               {totalBlogs !== 1 ? "s" : ""}
+//               {searchTerm && ` matching "${searchTerm}"`}
+//               {selectedStatus !== "all" && ` with status "${selectedStatus}"`}
+//             </p>
+//           </div>
+//         )}
+
+//         {/* Loading State */}
+//         {loading && <LoadingSkeleton />}
+
+//         {/* Blogs Grid/List */}
+//         {!loading && blogs.length > 0 && (
+//           <div
+//             className={
+//               viewMode === "grid"
+//                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+//                 : "space-y-4 mb-8"
+//             }
+//           >
+//             {blogs.map((blog) => (
+//               <BlogCard
+//                 key={blog._id}
+//                 blog={blog}
+//                 viewMode={viewMode}
+//                 onEdit={handleEdit}
+//                 onDelete={handleDelete}
+//                 onDuplicate={handleDuplicate}
+//               />
+//             ))}
+//           </div>
+//         )}
+
+//         {/* No Results */}
+//         {!loading && blogs.length === 0 && (
+//           <div className="text-center py-12">
+//             <div className="max-w-md mx-auto">
+//               <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+//               <h3 className="text-xl font-semibold mb-2">
+//                 {searchTerm || selectedStatus !== "all"
+//                   ? "No blogs found"
+//                   : "No blogs yet"}
+//               </h3>
+//               <p className="text-muted-foreground mb-6">
+//                 {searchTerm || selectedStatus !== "all"
+//                   ? "Try adjusting your search or filter criteria."
+//                   : "Start creating your first blog post to share your thoughts with the world."}
+//               </p>
+//               {searchTerm || selectedStatus !== "all" ? (
+//                 <Button
+//                   variant="outline"
+//                   onClick={() => {
+//                     setSearchTerm("");
+//                     setSelectedStatus("all");
+//                     loadBlogs(1, "", "all");
+//                   }}
+//                 >
+//                   Clear Filters
+//                 </Button>
+//               ) : (
+//                 <Button onClick={() => navigate("/create")}>
+//                   <Plus className="h-4 w-4 mr-2" />
+//                   Create Your First Blog
+//                 </Button>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Pagination */}
+//         {!loading && totalPages > 1 && (
+//           <div className="flex justify-center items-center space-x-2">
+//             <Button
+//               variant="outline"
+//               size="sm"
+//               onClick={() => handlePageChange(currentPage - 1)}
+//               disabled={currentPage === 1}
+//             >
+//               Previous
+//             </Button>
+
+//             {[...Array(totalPages)].map((_, i) => {
+//               const page = i + 1;
+//               if (
+//                 page === 1 ||
+//                 page === totalPages ||
+//                 (page >= currentPage - 2 && page <= currentPage + 2)
+//               ) {
+//                 return (
+//                   <Button
+//                     key={page}
+//                     variant={page === currentPage ? "default" : "outline"}
+//                     size="sm"
+//                     onClick={() => handlePageChange(page)}
+//                     className="min-w-[40px]"
+//                   >
+//                     {page}
+//                   </Button>
+//                 );
+//               }
+//               if (page === currentPage - 3 || page === currentPage + 3) {
+//                 return (
+//                   <span key={page} className="px-2">
+//                     ...
+//                   </span>
+//                 );
+//               }
+//               return null;
+//             })}
+
+//             <Button
+//               variant="outline"
+//               size="sm"
+//               onClick={() => handlePageChange(currentPage + 1)}
+//               disabled={currentPage === totalPages}
+//             >
+//               Next
+//             </Button>
+//           </div>
+//         )}
+
+//         {/* Delete Confirmation Dialog */}
+//         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+//           <AlertDialogContent>
+//             <AlertDialogHeader>
+//               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+//               <AlertDialogDescription>
+//                 This action cannot be undone. This will permanently delete the
+//                 blog post and remove all associated data.
+//               </AlertDialogDescription>
+//             </AlertDialogHeader>
+//             <AlertDialogFooter>
+//               <AlertDialogCancel>Cancel</AlertDialogCancel>
+//               <AlertDialogAction
+//                 onClick={confirmDelete}
+//                 className="bg-red-600 hover:bg-red-700"
+//               >
+//                 Delete
+//               </AlertDialogAction>
+//             </AlertDialogFooter>
+//           </AlertDialogContent>
+//         </AlertDialog>
+//       </div>
+//     </PageWrapper>
+//   );
+// };
+
+// export default MyBlogs;
+
+
+
+
+
+
+
+
+
+
+
+
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Share2, 
-  Calendar, 
-  Clock, 
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { blogService } from "@/services/blogService";
+import {
+  Search,
+  Filter,
+  Grid,
+  List,
+  X,
   Eye,
   Heart,
   MessageCircle,
+  Calendar,
+  Clock,
+  Edit3,
+  Trash2,
+  Plus,
+  MoreVertical,
   ExternalLink,
   Copy,
-  Twitter,
-  Facebook,
-  Linkedin,
-  Mail,
+  Share2,
   Loader2,
   AlertCircle,
-  Search,
-  Filter
+  BookOpen,
+  FileText,
+  Globe,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,293 +808,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { blogService } from "@/services/blogService"; 
-
-// Custom Select Component
-const Select = ({ value, onValueChange, children }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(value);
-  
-  useEffect(() => {
-    setSelectedValue(value);
-  }, [value]);
-
-  const handleSelect = (newValue) => {
-    setSelectedValue(newValue);
-    onValueChange(newValue);
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="relative">
-      {React.Children.map(children, child => {
-        if (child.type === SelectTrigger) {
-          return React.cloneElement(child, {
-            onClick: () => setIsOpen(!isOpen),
-            isOpen,
-            selectedValue
-          });
-        }
-        if (child.type === SelectContent) {
-          return isOpen ? React.cloneElement(child, {
-            onSelect: handleSelect,
-            onClose: () => setIsOpen(false)
-          }) : null;
-        }
-        return child;
-      })}
-    </div>
-  );
-};
-
-const SelectTrigger = ({ children, onClick, isOpen, selectedValue, className = "" }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-  >
-    <span>{children}</span>
-    <svg
-      className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9l6 6 6-6" />
-    </svg>
-  </button>
-);
-
-const SelectValue = ({ placeholder, children }) => {
-  const parent = React.useContext(React.createContext());
-  return <span>{children || placeholder}</span>;
-};
-
-const SelectContent = ({ children, onSelect, onClose }) => {
-  const ref = useRef();
-  
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        onClose();
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
-
-  return (
-    <div
-      ref={ref}
-      className="absolute top-full left-0 z-50 min-w-[8rem] w-full overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
-    >
-      {React.Children.map(children, child => 
-        React.cloneElement(child, { onSelect })
-      )}
-    </div>
-  );
-};
-
-const SelectItem = ({ value, children, onSelect }) => (
-  <button
-    type="button"
-    onClick={() => onSelect(value)}
-    className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-  >
-    {children}
-  </button>
-);
-
-const ShareButton = ({ blog, className = "" }) => {
-  const [copied, setCopied] = useState(false);
-  
-  const blogUrl = `${window.location.origin}/blog/${blog.slug}`;
-  
-  const shareOptions = [
-    {
-      name: "Copy Link",
-      icon: Copy,
-      action: () => {
-        navigator.clipboard.writeText(blogUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    },
-    {
-      name: "Twitter",
-      icon: Twitter,
-      action: () => {
-        const text = `Check out this blog: ${blog.title}`;
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blogUrl)}`, '_blank');
-      }
-    },
-    {
-      name: "Facebook",
-      icon: Facebook,
-      action: () => {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`, '_blank');
-      }
-    },
-    {
-      name: "LinkedIn",
-      icon: Linkedin,
-      action: () => {
-        const text = `Check out this blog: ${blog.title}`;
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(blogUrl)}&title=${encodeURIComponent(text)}`, '_blank');
-      }
-    },
-    {
-      name: "Email",
-      icon: Mail,
-      action: () => {
-        const subject = `Check out this blog: ${blog.title}`;
-        const body = `I thought you might find this blog interesting:\n\n${blog.title}\n${blog.excerpt}\n\nRead more: ${blogUrl}`;
-        window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-      }
-    }
-  ];
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={className}>
-          <Share2 className="h-4 w-4 mr-2" />
-          Share
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        {shareOptions.map((option) => {
-          const Icon = option.icon;
-          return (
-            <DropdownMenuItem key={option.name} onClick={option.action}>
-              <Icon className="h-4 w-4 mr-2" />
-              {option.name === "Copy Link" && copied ? "Copied!" : option.name}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-const BlogCard = ({ blog, onLike }) => {
-  const [isLiking, setIsLiking] = useState(false);
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const handleLike = async () => {
-    if (isLiking) return;
-    
-    try {
-      setIsLiking(true);
-      await blogService.likeBlog(blog.id);
-      if (onLike) onLike(blog.id);
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      // Try unlike if like failed
-      try {
-        await blogService.unlikeBlog(blog.id);
-        if (onLike) onLike(blog.id);
-      } catch (unlikeError) {
-        console.error('Error toggling unlike:', unlikeError);
-      }
-    } finally {
-      setIsLiking(false);
-    }
-  };
-
-  const handleReadMore = async () => {
-    try {
-      // Increment view count when user clicks read more
-      await blogService.incrementViewCount(blog.id);
-      // Navigate to blog detail page
-      window.open(`/blog/${blog.slug}`, '_blank');
-    } catch (error) {
-      console.error('Error incrementing views:', error);
-      // Still navigate even if view increment fails
-      window.open(`/blog/${blog.slug}`, '_blank');
-    }
-  };
-
-  return (
-    <Card className="h-full hover:shadow-lg transition-shadow duration-300">
-      <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-        <img 
-          src={blog.image || blog.featuredImage || '/api/placeholder/400/225'} 
-          alt={blog.title}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-        />
-      </div>
-      <CardHeader>
-        <div className="flex items-center justify-between mb-2">
-          <Badge variant="secondary">{blog.category || 'Uncategorized'}</Badge>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4 mr-1" />
-            {formatDate(blog.publishedAt || blog.createdAt)}
-          </div>
-        </div>
-        <CardTitle className="text-xl leading-tight hover:text-primary transition-colors cursor-pointer">
-          {blog.title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-muted-foreground mb-4 line-clamp-3">
-          {blog.excerpt || blog.description}
-        </p>
-        
-        <div className="flex flex-wrap gap-1 mb-4">
-          {(blog.tags || []).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-        
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1" />
-              {blog.readTime || blog.reading_time || 5} min read
-            </div>
-            <div className="flex items-center">
-              <Eye className="h-4 w-4 mr-1" />
-              {(blog.views || 0).toLocaleString()}
-            </div>
-            <button 
-              className={`flex items-center hover:text-red-500 transition-colors ${isLiking ? 'opacity-50' : ''}`}
-              onClick={handleLike}
-              disabled={isLiking}
-            >
-              <Heart className={`h-4 w-4 mr-1 ${blog.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-              {blog.likes || 0}
-            </button>
-            <div className="flex items-center">
-              <MessageCircle className="h-4 w-4 mr-1" />
-              {blog.comments || blog.commentsCount || 0}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <Button variant="default" className="flex-1 mr-2" onClick={handleReadMore}>
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Read More
-          </Button>
-          <ShareButton blog={blog} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LoadingSkeleton = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -346,115 +857,447 @@ const LoadingSkeleton = () => (
   </div>
 );
 
+const BlogCard = ({
+  blog,
+  onEdit,
+  onDelete,
+  onDuplicate,
+  viewMode = "grid",
+}) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "published":
+        return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300";
+      case "draft":
+        return "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300";
+      default:
+        return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300";
+    }
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast({
+        title: "Success",
+        description: "Link copied to clipboard!",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy link",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const blogUrl = `${window.location.origin}/blog/${blog.slug}`;
+
+  if (viewMode === "list") {
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+              <img
+                src={
+                  blog.featuredImage || blog.image || "/api/placeholder/80/80"
+                }
+                alt={blog.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-semibold text-lg line-clamp-1">
+                  {blog.title}
+                </h3>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEdit(blog._id)}>
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => copyToClipboard(blogUrl)}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDuplicate(blog._id)}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete(blog._id)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <div className="flex items-center gap-4 mb-3">
+                <Badge className={getStatusColor(blog.status)}>
+                  {blog.status}
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  {formatDate(blog.publishedAt || blog.createdAt)}
+                </span>
+              </div>
+
+              <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                {blog.excerpt || blog.description}
+              </p>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex items-center">
+                    <Eye className="h-4 w-4 mr-1" />
+                    {(blog.views || 0).toLocaleString()}
+                  </div>
+                  <div className="flex items-center">
+                    <Heart className="h-4 w-4 mr-1" />
+                    {blog.likeCount || blog.likes?.length || 0}
+                  </div>
+                  <div className="flex items-center">
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    {blog.commentsCount || 0}
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {blog.readTime || 5} min
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {blog.status === "published" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        window.open(`/blog/${blog.slug}`, "_blank")
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      navigate(`${ROUTES.EDIT_BLOG}/${blog._id || blog.id}`)
+                    }
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    Edit
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+      <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+        <img
+          src={blog.featuredImage || blog.image || "/api/placeholder/400/225"}
+          alt={blog.title}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+      <CardHeader>
+        <div className="flex items-center justify-between mb-2">
+          <Badge className={getStatusColor(blog.status)}>{blog.status}</Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(blog._id)}>
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => copyToClipboard(blogUrl)}>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Link
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDuplicate(blog._id)}>
+                <FileText className="h-4 w-4 mr-2" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(blog._id)}
+                className="text-red-600"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <CardTitle className="text-xl leading-tight line-clamp-2">
+          {blog.title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <p className="text-muted-foreground mb-4 line-clamp-3">
+          {blog.excerpt || blog.description}
+        </p>
+
+        <div className="flex flex-wrap gap-1 mb-4">
+          {(blog.tags || []).slice(0, 3).map((tag) => (
+            <Badge key={tag} variant="outline" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+          {blog.tags?.length > 3 && (
+            <Badge variant="outline" className="text-xs">
+              +{blog.tags.length - 3}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-1" />
+              {formatDate(blog.publishedAt || blog.createdAt)}
+            </div>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              {blog.readTime || 5} min
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <Eye className="h-4 w-4 mr-1" />
+              {(blog.views || 0).toLocaleString()}
+            </div>
+            <div className="flex items-center">
+              <Heart className="h-4 w-4 mr-1" />
+              {blog.likeCount || blog.likes?.length || 0}
+            </div>
+            <div className="flex items-center">
+              <MessageCircle className="h-4 w-4 mr-1" />
+              {blog.commentsCount || 0}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => onEdit(blog._id)}
+          >
+            <Edit3 className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+          {blog.status === "published" && (
+            <Button
+              variant="outline"
+              onClick={() => window.open(`/blog/${blog.slug}`, "_blank")}
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const MyBlogs = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const { toast } = useToast();
+
+  // State management
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalBlogs, setTotalBlogs] = useState(0);
-  const [categories, setCategories] = useState(['all']);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [blogToDelete, setBlogToDelete] = useState(null);
 
-  const loadBlogs = async (page = 1, search = searchTerm, author = selectedCategory) => {
+  const loadBlogs = async (
+    page = 1,
+    search = searchTerm,
+    status = selectedStatus,
+  ) => {
+    if (!user?._id) return;
+
     try {
       setLoading(true);
       setError(null);
-      
-      // Build query object for your BlogService
+
       const query = {
         page,
-        limit: 6,
-        isPublished: true, // Only fetch published blogs
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
+        limit: 12,
+        author: user._id,
+        sortBy: "createdAt",
+        sortOrder: "desc",
       };
 
-      // Add search if provided
       if (search) {
         query.search = search;
       }
 
-      // Add author filter if not 'all'
-      if (author && author !== 'all') {
-        query.author = author;
+      if (status && status !== "all") {
+        query.status = status;
       }
 
-      const response = await blogService.getBlogs(query);
-      
-      // Handle the response structure from your BlogService
+      const response = await blogService.getMyBlogs(query);
+
       const blogsData = response.blogs || response.data || [];
       const pagination = response.pagination || {};
-      
+
       setBlogs(blogsData);
-      setTotalPages(pagination.totalPages || Math.ceil((pagination.total || blogsData.length) / 6));
+      setTotalPages(
+        pagination.totalPages ||
+          Math.ceil((pagination.total || blogsData.length) / 12),
+      );
       setTotalBlogs(pagination.total || blogsData.length);
       setCurrentPage(pagination.page || page);
-      
     } catch (err) {
-      setError(err.message || 'Failed to load blogs. Please try again later.');
-      console.error('Error fetching blogs:', err);
+      setError(err.message || "Failed to load blogs. Please try again later.");
+      console.error("Error fetching blogs:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadTags = async () => {
-    try {
-      const tags = await blogService.getTags();
-      // Convert tags to categories (assuming tags can be used as categories)
-      const tagsList = Array.isArray(tags) ? tags : (tags.data || []);
-      setCategories(['all', ...tagsList]);
-    } catch (err) {
-      console.error('Error fetching tags:', err);
-      // Keep default categories if fetch fails
-      setCategories(['all', 'React', 'Node.js', 'CSS', 'TypeScript', 'API', 'Performance']);
-    }
-  };
-
   useEffect(() => {
-    loadTags();
-    loadBlogs();
-  }, []);
+    if (user?._id) {
+      loadBlogs();
+    }
+  }, [user]);
 
   const handleSearch = (value) => {
     setSearchTerm(value);
     setCurrentPage(1);
-    loadBlogs(1, value, selectedCategory);
+    loadBlogs(1, value, selectedStatus);
   };
 
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
+  const handleStatusChange = (status) => {
+    setSelectedStatus(status);
     setCurrentPage(1);
-    loadBlogs(1, searchTerm, category);
+    loadBlogs(1, searchTerm, status);
   };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    loadBlogs(page, searchTerm, selectedCategory);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    loadBlogs(page, searchTerm, selectedStatus);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleLike = (blogId) => {
-    // Update the blog's like count in the local state
-    setBlogs(prevBlogs => 
-      prevBlogs.map(b => 
-        b.id === blogId 
-          ? { ...b, likes: (b.likes || 0) + (b.isLiked ? -1 : 1), isLiked: !b.isLiked }
-          : b
-      )
-    );
+  const handleEdit = (blogId) => {
+    navigate(`/edit/${blogId}`);
   };
 
-  if (error) {
+  const handleDelete = (blogId) => {
+    setBlogToDelete(blogId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!blogToDelete) return;
+
+    try {
+      await blogService.deleteBlog(blogToDelete);
+      setBlogs((prev) => prev.filter((blog) => blog._id !== blogToDelete));
+      setTotalBlogs((prev) => prev - 1);
+
+      toast({
+        title: "Success",
+        description: "Blog deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete blog",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setBlogToDelete(null);
+    }
+  };
+
+  const handleDuplicate = async (blogId) => {
+    try {
+      const blogToClone = blogs.find((blog) => blog._id === blogId);
+      if (!blogToClone) return;
+
+      const duplicatedBlog = {
+        title: `${blogToClone.title} (Copy)`,
+        content: blogToClone.content,
+        excerpt: blogToClone.excerpt,
+        tags: blogToClone.tags,
+        category: blogToClone.category,
+        status: "draft",
+      };
+
+      const response = await blogService.createBlog(duplicatedBlog);
+
+      toast({
+        title: "Success",
+        description: "Blog duplicated successfully",
+      });
+
+      // Refresh blogs list
+      loadBlogs(currentPage, searchTerm, selectedStatus);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to duplicate blog",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (error && blogs.length === 0) {
     return (
       <PageWrapper className="py-8">
         <Alert variant="destructive" className="max-w-2xl mx-auto">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error}
-          </AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
         <div className="text-center mt-4">
           <Button onClick={() => loadBlogs()} variant="outline">
@@ -469,40 +1312,62 @@ export const MyBlogs = () => {
     <PageWrapper className="py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">My Blogs</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Explore my thoughts on web development, programming, and technology
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">My Blogs</h1>
+            <p className="text-muted-foreground">
+              Manage and organize your blog posts
+            </p>
+          </div>
+          <Button onClick={() => navigate("/create")} className="mt-4 sm:mt-0">
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Blog
+          </Button>
         </div>
 
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        {/* Filters and Search */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search blogs..."
+              placeholder="Search your blogs..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10"
             />
           </div>
+
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select category">
-                  {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
-                </SelectValue>
+            <Select value={selectedStatus} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category === 'all' ? 'All Categories' : category}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
               </SelectContent>
             </Select>
+
+            <div className="flex border rounded-md">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-r-none"
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -510,9 +1375,10 @@ export const MyBlogs = () => {
         {!loading && (
           <div className="mb-6">
             <p className="text-muted-foreground">
-              Showing {blogs.length} of {totalBlogs} blog{totalBlogs !== 1 ? 's' : ''}
-              {searchTerm && ` for "${searchTerm}"`}
-              {selectedCategory !== 'all' && ` in ${selectedCategory}`}
+              Showing {blogs.length} of {totalBlogs} blog
+              {totalBlogs !== 1 ? "s" : ""}
+              {searchTerm && ` matching "${searchTerm}"`}
+              {selectedStatus !== "all" && ` with status "${selectedStatus}"`}
             </p>
           </div>
         )}
@@ -520,14 +1386,23 @@ export const MyBlogs = () => {
         {/* Loading State */}
         {loading && <LoadingSkeleton />}
 
-        {/* Blogs Grid */}
+        {/* Blogs Grid/List */}
         {!loading && blogs.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+                : "space-y-4 mb-8"
+            }
+          >
             {blogs.map((blog) => (
-              <BlogCard 
-                key={blog.id} 
-                blog={blog} 
-                onLike={handleLike}
+              <BlogCard
+                key={blog._id}
+                blog={blog}
+                viewMode={viewMode}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
               />
             ))}
           </div>
@@ -537,22 +1412,32 @@ export const MyBlogs = () => {
         {!loading && blogs.length === 0 && (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
-              <h3 className="text-lg font-semibold mb-2">No blogs found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm || selectedCategory !== 'all'
+              <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">
+                {searchTerm || selectedStatus !== "all"
+                  ? "No blogs found"
+                  : "No blogs yet"}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {searchTerm || selectedStatus !== "all"
                   ? "Try adjusting your search or filter criteria."
-                  : "No blogs have been published yet."}
+                  : "Start creating your first blog post to share your thoughts with the world."}
               </p>
-              {(searchTerm || selectedCategory !== 'all') && (
+              {searchTerm || selectedStatus !== "all" ? (
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory('all');
-                    loadBlogs(1, '', 'all');
+                    setSearchTerm("");
+                    setSelectedStatus("all");
+                    loadBlogs(1, "", "all");
                   }}
                 >
                   Clear Filters
+                </Button>
+              ) : (
+                <Button onClick={() => navigate("/create")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Blog
                 </Button>
               )}
             </div>
@@ -570,24 +1455,36 @@ export const MyBlogs = () => {
             >
               Previous
             </Button>
-            
+
             {[...Array(totalPages)].map((_, i) => {
               const page = i + 1;
-              const isCurrentPage = page === currentPage;
-              
-              return (
-                <Button
-                  key={page}
-                  variant={isCurrentPage ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(page)}
-                  className="min-w-[40px]"
-                >
-                  {page}
-                </Button>
-              );
+              if (
+                page === 1 ||
+                page === totalPages ||
+                (page >= currentPage - 2 && page <= currentPage + 2)
+              ) {
+                return (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    className="min-w-[40px]"
+                  >
+                    {page}
+                  </Button>
+                );
+              }
+              if (page === currentPage - 3 || page === currentPage + 3) {
+                return (
+                  <span key={page} className="px-2">
+                    ...
+                  </span>
+                );
+              }
+              return null;
             })}
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -598,6 +1495,28 @@ export const MyBlogs = () => {
             </Button>
           </div>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                blog post and remove all associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </PageWrapper>
   );
