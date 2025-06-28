@@ -1,152 +1,4 @@
 
-// import React from "react";
-// import { Toaster } from "@/components/ui/toaster";
-// import { Toaster as Sonner } from "@/components/ui/sonner";
-// import { TooltipProvider } from "@/components/ui/tooltip";
-// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import { AuthProvider } from "@/contexts/AuthContext";
-// import { ThemeProvider } from "@/contexts/ThemeContext";
-// import { Navbar } from "@/components/layout/Navbar";
-// import { Footer } from "@/components/layout/Footer";
-// import { PrivateRoute } from "@/components/shared/PrivateRoute";
-// import { ROUTES } from "@/utils/constant";
-
-// // Import pages
-// import { Home } from "./pages/Home";
-// import { BlogDetails } from "./pages/BlogDetails";
-// import { Login } from "./pages/Login";
-// import Register from "./pages/Register";
-// import { CreateBlog } from "./pages/CreateBlog";
-// import { Dashboard } from "./pages/Dashboard";
-// import { MyBlogs } from "./pages/MyBlogs";
-// import Profile from "./pages/Profile";
-// import { EditBlog } from "./pages/EditBlog";
-// import NotFound from "./pages/NotFound";
-// import About from "./pages/About";
-// import Contact from "./pages/Contact";
-// import Privacy from "./pages/Privacy";
-// import Terms from "./pages/Terms";
-// import Cookies from "./pages/Cookies";
-// import Gdpr from "./pages/Gdpr";
-// import Help from "./pages/Help";
-// import Feed from "./pages/Feed";
-
-// // Create a client
-// const queryClient = new QueryClient({
-//   defaultOptions: {
-//     queries: {
-//       refetchOnWindowFocus: false,
-//       retry: 1,
-//     },
-//   },
-// });
-
-// const App = () => (
-//   <QueryClientProvider client={queryClient}>
-//     <ThemeProvider>
-//       <AuthProvider>
-//         <TooltipProvider>
-//           <BrowserRouter>
-//             <div className="min-h-screen flex flex-col">
-//               <Navbar />
-//               <main className="flex-1">
-//                 <Routes>
-//                   {/* Public Routes */}
-//                   <Route path={ROUTES.HOME} element={<Home />} />
-//                   <Route
-//                     path={`${ROUTES.BLOG_DETAILS}/:slug`}
-//                     element={<BlogDetails />}
-//                   />
-//                   <Route path={ROUTES.LOGIN} element={<Login />} />
-//                   <Route path={ROUTES.REGISTER} element={<Register />} />
-//                   <Route path={ROUTES.HELP} element={<Help />} />
-
-//                   {/* Static Pages */}
-//                   <Route path={ROUTES.ABOUT} element={<About />} />
-//                   <Route path={ROUTES.CONTACT} element={<Contact />} />
-//                   <Route path={ROUTES.PRIVACY} element={<Privacy />} />
-//                   <Route path={ROUTES.TERMS} element={<Terms />} />
-//                   <Route path={ROUTES.COOKIES} element={<Cookies />} />
-//                   <Route path={ROUTES.GDPR} element={<Gdpr />} />
-
-//                   {/* Protected Routes */}
-//                   <Route
-//                     path={ROUTES.FEED}
-//                     element={
-//                       <PrivateRoute>
-//                         <Feed />
-//                       </PrivateRoute>
-//                     }
-//                   />
-//                   <Route
-//                     path={ROUTES.CREATE_BLOG}
-//                     element={
-//                       <PrivateRoute>
-//                         <CreateBlog />
-//                       </PrivateRoute>
-//                     }
-//                   />
-//                   <Route
-//                     path={`${ROUTES.EDIT_BLOG}/:id`}
-//                     element={
-//                       <PrivateRoute>
-//                         <EditBlog />
-//                       </PrivateRoute>
-//                     }
-//                   />
-//                   <Route
-//                     path={ROUTES.DASHBOARD}
-//                     element={
-//                       <PrivateRoute>
-//                         <Dashboard />
-//                       </PrivateRoute>
-//                     }
-//                   />
-//                   <Route
-//                     path={ROUTES.MY_BLOGS}
-//                     element={
-//                       <PrivateRoute>
-//                         <MyBlogs />
-//                       </PrivateRoute>
-//                     }
-//                   />
-//                   <Route
-//                     path={ROUTES.PROFILE}
-//                     element={
-//                       <PrivateRoute>
-//                         <Profile />
-//                       </PrivateRoute>
-//                     }
-//                   />
-
-//                   {/* Catch-all route */}
-//                   <Route path="*" element={<NotFound />} />
-//                 </Routes>
-//               </main>
-//               <Footer />
-//             </div>
-//             <Toaster />
-//             <Sonner />
-//           </BrowserRouter>
-//         </TooltipProvider>
-//       </AuthProvider>
-//     </ThemeProvider>
-//   </QueryClientProvider>
-// );
-
-// export default App;
-
-
-
-
-
-
-
-
-
-
-
 import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -160,6 +12,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PrivateRoute } from "@/components/shared/PrivateRoute";
 import { ROUTES } from "@/utils/constant";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 
 // Lazy import pages for code splitting
 const Home = React.lazy(() =>
@@ -198,6 +51,15 @@ const Cookies = React.lazy(() => import("./pages/Cookies"));
 const Gdpr = React.lazy(() => import("./pages/Gdpr"));
 const Help = React.lazy(() => import("./pages/Help"));
 const Feed = React.lazy(() => import("./pages/Feed"));
+const Analytics = React.lazy(() =>
+  import("./pages/Analytics").then((module) => ({ default: module.Analytics })),
+);
+const FollowersPage = React.lazy(() => import("./pages/FollowersPage"));
+const FollowingPage = React.lazy(() => import("./pages/FollowingPage"));
+
+const UserProfile = React.lazy(() => import("./pages/UserProfile"));
+const Notifications = React.lazy(() => import("./pages/Notifications"));
+const CommunityForum = React.lazy(() => import("./pages/CommunityForum"));
 
 // Loading component for suspense
 const PageLoader = () => (
@@ -310,6 +172,60 @@ const App = () => (
                         </PrivateRoute>
                       }
                     />
+                    <Route
+                      path="/dashboard/analytics"
+                      element={
+                        <PrivateRoute>
+                          <Analytics />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    {/* User profile pages */}
+                    <Route
+                      path="/users/:userId"
+                      element={
+                        <PrivateRoute>
+                          <UserProfile />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/users/:userId/followers"
+                      element={
+                        <PrivateRoute>
+                          <FollowersPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/users/:userId/following"
+                      element={
+                        <PrivateRoute>
+                          <FollowingPage />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    {/* Notifications */}
+                    <Route
+                      path="/notifications"
+                      element={
+                        <PrivateRoute>
+                          <Notifications />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    {/* Community Forum */}
+                    <Route
+                      path="/community"
+                      element={
+                        <PrivateRoute>
+                          <CommunityForum />
+                        </PrivateRoute>
+                      }
+                    />
 
                     {/* Catch-all route */}
                     <Route path="*" element={<NotFound />} />
@@ -318,6 +234,10 @@ const App = () => (
               </main>
               <Footer />
             </div>
+
+            {/* Chat Panel - Available globally for authenticated users */}
+            <ChatPanel />
+
             <Toaster />
             <Sonner />
           </BrowserRouter>

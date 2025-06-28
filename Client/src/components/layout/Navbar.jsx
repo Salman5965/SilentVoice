@@ -25,8 +25,11 @@ import {
   Sun,
   Moon,
   Monitor,
+  HelpCircle,
 } from "lucide-react";
 import { useBlogStore } from "@/features/blogs/blogStore";
+import { ChatButton } from "@/components/chat/ChatButton";
+import { NotificationButton } from "@/components/notifications";
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -93,10 +96,16 @@ export const Navbar = () => {
                 Feed
               </Link>
               <Link
-                to={ROUTES.HELP}
+                to="/community"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Help
+                Community
+              </Link>
+              <Link
+                to="/daily-drip"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                DailyDrip
               </Link>
             </div>
           )}
@@ -136,6 +145,12 @@ export const Navbar = () => {
                   Write
                 </Link>
               </Button>
+
+              {/* Notification Button */}
+              <NotificationButton />
+
+              {/* Chat Button */}
+              <ChatButton />
 
               {/* User Menu */}
               <DropdownMenu>
@@ -177,7 +192,13 @@ export const Navbar = () => {
                   <DropdownMenuItem asChild>
                     <Link to={ROUTES.PROFILE}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Settings
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={ROUTES.HELP}>
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      Help
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

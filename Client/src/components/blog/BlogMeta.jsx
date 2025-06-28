@@ -21,16 +21,77 @@
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu";
 // import { LikeButton } from "@/components/shared/LikeButton";
+// import { useToast } from "@/hooks/use-toast";
+// import { bookmarkService } from "@/services/bookmarkService";
+// import { useChatStore } from "@/features/chat/chatStore";
+// import { useAuthContext } from "@/contexts/AuthContext";
+// import { FollowButton } from "@/components/shared/FollowButton";
 
-// export const BlogMeta = ({
-//   blog,
-//   variant = "full",
-//   showActions = true,
-// }) => {
-//   const authorUrl = `${ROUTES.HOME}?author=${blog.author.id}`;
-//   const readingTime = Math.ceil(blog.content.length / 200);
+// export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
+//   const { toast } = useToast();
+//   const { user: currentUser } = useAuthContext();
+//   const { startConversation, openChat } = useChatStore();
+//   // Safety checks for blog data
+//   if (!blog || !blog.author) {
+//     return <div>Loading...</div>;
+//   }
+
+//   const authorUrl = `${ROUTES.HOME}?author=${blog.author.id || blog.author._id}`;
+//   const readingTime = Math.ceil((blog.content?.length || 0) / 200);
+
+//   // Check if current user is the author
+//   const isAuthor = currentUser?._id === (blog.author._id || blog.author.id);
+
+//   const handleMessageAuthor = async () => {
+//     if (!currentUser) {
+//       toast({
+//         title: "Sign in required",
+//         description: "Please sign in to send messages",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     if (isAuthor) {
+//       toast({
+//         title: "Cannot message yourself",
+//         description: "You cannot send a message to yourself",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     try {
+//       // Create user object for chat service
+//       const chatUser = {
+//         id: blog.author._id || blog.author.id,
+//         name: blog.author.name || blog.author.username,
+//         username: blog.author.username,
+//         avatar: blog.author.avatar,
+//       };
+
+//       // Start conversation with this user
+//       await startConversation(chatUser);
+
+//       // Open chat panel
+//       openChat();
+
+//       toast({
+//         title: "Chat opened",
+//         description: `You can now send messages to ${blog.author.username}`,
+//       });
+//     } catch (error) {
+//       console.error("Failed to start conversation:", error);
+//       toast({
+//         title: "Error",
+//         description: "Failed to start conversation. Please try again.",
+//         variant: "destructive",
+//       });
+//     }
+//   };
 
 //   const handleShare = async () => {
+//     // Try native sharing first
 //     if (navigator.share) {
 //       try {
 //         await navigator.share({
@@ -38,26 +99,55 @@
 //           text: blog.excerpt,
 //           url: window.location.href,
 //         });
+//         return;
 //       } catch (error) {
-//         copyToClipboard();
+//         // User cancelled or share failed, fall back to clipboard
 //       }
-//     } else {
-//       copyToClipboard();
+//     }
+
+//     // Fallback to clipboard
+//     try {
+//       await navigator.clipboard.writeText(window.location.href);
+//       toast({
+//         title: "Link copied!",
+//         description: "Blog link copied to clipboard",
+//         duration: 2000,
+//       });
+//     } catch (error) {
+//       toast({
+//         title: "Share failed",
+//         description: "Unable to share the blog",
+//         variant: "destructive",
+//         duration: 3000,
+//       });
 //     }
 //   };
 
-//   const copyToClipboard = () => {
-//     navigator.clipboard.writeText(window.location.href);
-//   };
+//   const handleBookmark = async () => {
+//     try {
+//       const result = await bookmarkService.toggleBookmark(blog._id || blog.id);
 
-//   const handleBookmark = () => {
-//     console.log("Bookmark blog:", blog.id);
+//       toast({
+//         title: result.bookmarked ? "Bookmarked!" : "Bookmark removed",
+//         description: result.bookmarked
+//           ? "Blog saved to your bookmarks"
+//           : "Blog removed from bookmarks",
+//         duration: 2000,
+//       });
+//     } catch (error) {
+//       toast({
+//         title: "Error",
+//         description: "Failed to bookmark blog",
+//         variant: "destructive",
+//         duration: 3000,
+//       });
+//     }
 //   };
 
 //   if (variant === "compact") {
 //     return (
 //       <div className="flex items-center justify-between border-b pb-4 mb-6">
-//         <div className="flex items-center space-x-4">
+//         <div className="flex items-center justify-between flex-1">
 //           <Link
 //             to={authorUrl}
 //             className="flex items-center space-x-3 hover:opacity-80"
@@ -75,11 +165,31 @@
 //               </p>
 //             </div>
 //           </Link>
+
+//           {/* Author action buttons for compact variant */}
+//           {currentUser && !isAuthor && (
+//             <div className="flex items-center space-x-2">
+//               <Button variant="outline" size="sm" onClick={handleMessageAuthor}>
+//                 <MessageCircle className="h-4 w-4 mr-1" />
+//                 Message
+//               </Button>
+//               <FollowButton
+//                 userId={blog.author._id || blog.author.id}
+//                 size="sm"
+//                 showIcon={false}
+//               />
+//             </div>
+//           )}
 //         </div>
 
 //         {showActions && (
 //           <div className="flex items-center space-x-2">
-//             <LikeButton blogId={blog.id} likeCount={blog.likeCount} />
+//             <LikeButton
+//               blogId={blog.id || blog._id}
+//               likeCount={blog.likeCount || 0}
+//               isLiked={blog.isLiked}
+//               blogLikes={blog.likes || []}
+//             />
 //             <Button variant="ghost" size="sm" onClick={handleShare}>
 //               <Share2 className="h-4 w-4" />
 //             </Button>
@@ -96,7 +206,7 @@
 //     <div className="space-y-6">
 //       {/* Author and Date */}
 //       <div className="flex items-center justify-between">
-//         <div className="flex items-center space-x-4">
+//         <div className="flex items-center justify-between flex-1">
 //           <Link
 //             to={authorUrl}
 //             className="flex items-center space-x-3 hover:opacity-80"
@@ -116,6 +226,21 @@
 //               )}
 //             </div>
 //           </Link>
+
+//           {/* Author action buttons */}
+//           {currentUser && !isAuthor && (
+//             <div className="flex items-center space-x-2">
+//               <Button variant="outline" size="sm" onClick={handleMessageAuthor}>
+//                 <MessageCircle className="h-4 w-4 mr-2" />
+//                 Message
+//               </Button>
+//               <FollowButton
+//                 userId={blog.author._id || blog.author.id}
+//                 size="sm"
+//                 showIcon={false}
+//               />
+//             </div>
+//           )}
 //         </div>
 
 //         {showActions && (
@@ -151,16 +276,16 @@
 //         </div>
 //         <div className="flex items-center space-x-1">
 //           <Eye className="h-4 w-4" />
-//           <span>{blog.viewCount.toLocaleString()} views</span>
+//           <span>{(blog.views || 0).toLocaleString()} views</span>
 //         </div>
 //         <div className="flex items-center space-x-1">
 //           <MessageCircle className="h-4 w-4" />
-//           <span>{blog.commentCount} comments</span>
+//           <span>{blog.commentCount || 0} comments</span>
 //         </div>
 //       </div>
 
 //       {/* Tags */}
-//       {blog.tags.length > 0 && (
+//       {blog.tags && blog.tags.length > 0 && (
 //         <div className="flex flex-wrap gap-2">
 //           {blog.tags.map((tag) => (
 //             <Badge key={tag} variant="secondary">
@@ -173,7 +298,12 @@
 //       {/* Action Buttons */}
 //       {showActions && (
 //         <div className="flex items-center space-x-4 pt-4 border-t">
-//           <LikeButton blogId={blog.id} likeCount={blog.likeCount} />
+//           <LikeButton
+//             blogId={blog.id || blog._id}
+//             likeCount={blog.likeCount || 0}
+//             isLiked={blog.isLiked}
+//             blogLikes={blog.likes || []}
+//           />
 //           <Button variant="outline" size="sm" onClick={handleShare}>
 //             <Share2 className="h-4 w-4 mr-2" />
 //             Share
@@ -186,14 +316,22 @@
 //       )}
 
 //       {/* Last Updated */}
-//       {blog.updatedAt !== blog.createdAt && (
-//         <p className="text-xs text-muted-foreground border-t pt-4">
-//           Last updated {getTimeAgo(blog.updatedAt)}
-//         </p>
-//       )}
+//       {blog.updatedAt &&
+//         blog.createdAt &&
+//         blog.updatedAt !== blog.createdAt && (
+//           <p className="text-xs text-muted-foreground border-t pt-4">
+//             Last updated {getTimeAgo(blog.updatedAt)}
+//           </p>
+//         )}
 //     </div>
 //   );
 // };
+
+
+
+
+
+
 
 
 
@@ -222,8 +360,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LikeButton } from "@/components/shared/LikeButton";
+import { useToast } from "@/hooks/use-toast";
+import { bookmarkService } from "@/services/bookmarkService";
+import { useChatStore } from "@/features/chat/chatStore";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { FollowButton } from "@/components/shared/FollowButton";
 
 export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
+  const { toast } = useToast();
+  const { user: currentUser } = useAuthContext();
+  const { startConversation, openChat } = useChatStore();
   // Safety checks for blog data
   if (!blog || !blog.author) {
     return <div>Loading...</div>;
@@ -232,7 +378,59 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
   const authorUrl = `${ROUTES.HOME}?author=${blog.author.id || blog.author._id}`;
   const readingTime = Math.ceil((blog.content?.length || 0) / 200);
 
+  // Check if current user is the author
+  const isAuthor = currentUser?._id === (blog.author._id || blog.author.id);
+
+  const handleMessageAuthor = async () => {
+    if (!currentUser) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to send messages",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isAuthor) {
+      toast({
+        title: "Cannot message yourself",
+        description: "You cannot send a message to yourself",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Create user object for chat service
+      const chatUser = {
+        id: blog.author._id || blog.author.id,
+        name: blog.author.name || blog.author.username,
+        username: blog.author.username,
+        avatar: blog.author.avatar,
+      };
+
+      // Start conversation with this user
+      await startConversation(chatUser);
+
+      // Open chat panel
+      openChat();
+
+      toast({
+        title: "Chat opened",
+        description: `You can now send messages to ${blog.author.username}`,
+      });
+    } catch (error) {
+      console.error("Failed to start conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleShare = async () => {
+    // Try native sharing first
     if (navigator.share) {
       try {
         await navigator.share({
@@ -240,26 +438,55 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
           text: blog.excerpt,
           url: window.location.href,
         });
+        return;
       } catch (error) {
-        copyToClipboard();
+        // User cancelled or share failed, fall back to clipboard
       }
-    } else {
-      copyToClipboard();
+    }
+
+    // Fallback to clipboard
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link copied!",
+        description: "Blog link copied to clipboard",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast({
+        title: "Share failed",
+        description: "Unable to share the blog",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href);
-  };
+  const handleBookmark = async () => {
+    try {
+      const result = await bookmarkService.toggleBookmark(blog._id || blog.id);
 
-  const handleBookmark = () => {
-    console.log("Bookmark blog:", blog.id);
+      toast({
+        title: result.bookmarked ? "Bookmarked!" : "Bookmark removed",
+        description: result.bookmarked
+          ? "Blog saved to your bookmarks"
+          : "Blog removed from bookmarks",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to bookmark blog",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   if (variant === "compact") {
     return (
       <div className="flex items-center justify-between border-b pb-4 mb-6">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between flex-1">
           <Link
             to={authorUrl}
             className="flex items-center space-x-3 hover:opacity-80"
@@ -277,6 +504,21 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
               </p>
             </div>
           </Link>
+
+          {/* Author action buttons for compact variant */}
+          {currentUser && !isAuthor && (
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={handleMessageAuthor}>
+                <MessageCircle className="h-4 w-4 mr-1" />
+                Message
+              </Button>
+              <FollowButton
+                userId={blog.author._id || blog.author.id}
+                size="sm"
+                showIcon={false}
+              />
+            </div>
+          )}
         </div>
 
         {showActions && (
@@ -284,6 +526,7 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
             <LikeButton
               blogId={blog.id || blog._id}
               likeCount={blog.likeCount || 0}
+              isLiked={blog.isLiked}
               blogLikes={blog.likes || []}
             />
             <Button variant="ghost" size="sm" onClick={handleShare}>
@@ -302,7 +545,7 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
     <div className="space-y-6">
       {/* Author and Date */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between flex-1">
           <Link
             to={authorUrl}
             className="flex items-center space-x-3 hover:opacity-80"
@@ -322,6 +565,21 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
               )}
             </div>
           </Link>
+
+          {/* Author action buttons */}
+          {currentUser && !isAuthor && (
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={handleMessageAuthor}>
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Message
+              </Button>
+              <FollowButton
+                userId={blog.author._id || blog.author.id}
+                size="sm"
+                showIcon={false}
+              />
+            </div>
+          )}
         </div>
 
         {showActions && (
@@ -382,6 +640,7 @@ export const BlogMeta = ({ blog, variant = "full", showActions = true }) => {
           <LikeButton
             blogId={blog.id || blog._id}
             likeCount={blog.likeCount || 0}
+            isLiked={blog.isLiked}
             blogLikes={blog.likes || []}
           />
           <Button variant="outline" size="sm" onClick={handleShare}>
