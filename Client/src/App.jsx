@@ -1,4 +1,3 @@
-
 import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -59,7 +58,12 @@ const FollowingPage = React.lazy(() => import("./pages/FollowingPage"));
 
 const UserProfile = React.lazy(() => import("./pages/UserProfile"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
+const Messages = React.lazy(() => import("./pages/Messages"));
+const Stories = React.lazy(() => import("./pages/Stories"));
+const CreateStory = React.lazy(() => import("./pages/CreateStory"));
+const Community = React.lazy(() => import("./pages/Community"));
 const CommunityForum = React.lazy(() => import("./pages/CommunityForum"));
+const Explore = React.lazy(() => import("./pages/Explore"));
 
 // Loading component for suspense
 const PageLoader = () => (
@@ -217,12 +221,58 @@ const App = () => (
                       }
                     />
 
-                    {/* Community Forum */}
+                    {/* Messages */}
+                    <Route
+                      path="/messages"
+                      element={
+                        <PrivateRoute>
+                          <Messages />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    {/* Stories */}
+                    <Route
+                      path="/stories"
+                      element={
+                        <PrivateRoute>
+                          <Stories />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/stories/create"
+                      element={
+                        <PrivateRoute>
+                          <CreateStory />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    {/* Community Pages */}
                     <Route
                       path="/community"
                       element={
                         <PrivateRoute>
+                          <Community />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/community/forum"
+                      element={
+                        <PrivateRoute>
                           <CommunityForum />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    {/* Explore Page */}
+                    <Route
+                      path={ROUTES.EXPLORE}
+                      element={
+                        <PrivateRoute>
+                          <Explore />
                         </PrivateRoute>
                       }
                     />
