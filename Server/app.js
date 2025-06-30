@@ -19,6 +19,8 @@ import bookmarkRoutes from "./routes/bookmarks.js";
 import uploadRoutes from "./routes/uploads.js";
 import notificationRoutes from "./routes/notifications.js";
 import forumRoutes from "./routes/forum.js";
+import dailyDripRoutes from "./routes/dailyDrip.js";
+import storyRoutes from "./routes/stories.js";
 
 // Import middleware
 import errorHandler from "./middlewares/errorHandler.js";
@@ -136,6 +138,8 @@ app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/forum", forumRoutes);
+app.use("/api/daily-drip", dailyDripRoutes);
+app.use("/api/stories", storyRoutes);
 
 // Welcome route
 app.get("/", (req, res) => {

@@ -58,12 +58,12 @@ const FollowingPage = React.lazy(() => import("./pages/FollowingPage"));
 
 const UserProfile = React.lazy(() => import("./pages/UserProfile"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
-const Messages = React.lazy(() => import("./pages/Messages"));
+const CommunityForum = React.lazy(() => import("./pages/CommunityForum"));
+const DailyDrip = React.lazy(() => import("./pages/DailyDrip"));
 const Stories = React.lazy(() => import("./pages/Stories"));
 const CreateStory = React.lazy(() => import("./pages/CreateStory"));
-const Community = React.lazy(() => import("./pages/Community"));
-const CommunityForum = React.lazy(() => import("./pages/CommunityForum"));
 const Explore = React.lazy(() => import("./pages/Explore"));
+const Messages = React.lazy(() => import("./pages/Messages"));
 
 // Loading component for suspense
 const PageLoader = () => (
@@ -118,6 +118,10 @@ const App = () => (
                     <Route path={ROUTES.LOGIN} element={<Login />} />
                     <Route path={ROUTES.REGISTER} element={<Register />} />
                     <Route path={ROUTES.HELP} element={<Help />} />
+
+                    {/* Public browsing routes */}
+                    <Route path="/stories" element={<Stories />} />
+                    <Route path="/explore" element={<Explore />} />
 
                     {/* Static Pages */}
                     <Route path={ROUTES.ABOUT} element={<About />} />
@@ -221,25 +225,20 @@ const App = () => (
                       }
                     />
 
-                    {/* Messages */}
+                    {/* Community Forum */}
                     <Route
-                      path="/messages"
+                      path="/community"
                       element={
                         <PrivateRoute>
-                          <Messages />
+                          <CommunityForum />
                         </PrivateRoute>
                       }
                     />
 
-                    {/* Stories */}
-                    <Route
-                      path="/stories"
-                      element={
-                        <PrivateRoute>
-                          <Stories />
-                        </PrivateRoute>
-                      }
-                    />
+                    {/* Daily Drip */}
+                    <Route path="/daily-drip" element={<DailyDrip />} />
+
+                    {/* Story creation - protected */}
                     <Route
                       path="/stories/create"
                       element={
@@ -249,30 +248,12 @@ const App = () => (
                       }
                     />
 
-                    {/* Community Pages */}
+                    {/* Messages - protected */}
                     <Route
-                      path="/community"
+                      path="/messages"
                       element={
                         <PrivateRoute>
-                          <Community />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/community/forum"
-                      element={
-                        <PrivateRoute>
-                          <CommunityForum />
-                        </PrivateRoute>
-                      }
-                    />
-
-                    {/* Explore Page */}
-                    <Route
-                      path={ROUTES.EXPLORE}
-                      element={
-                        <PrivateRoute>
-                          <Explore />
+                          <Messages />
                         </PrivateRoute>
                       }
                     />
