@@ -125,10 +125,16 @@ const StoryDetails = () => {
   const loadComments = async () => {
     try {
       setCommentsLoading(true);
+      console.log('Loading comments for story:', storyId);
+
       const response = await storiesService.getComments(storyId);
+      console.log('Comments response:', response);
+
       setComments(response.comments || []);
     } catch (error) {
       console.error("Error loading comments:", error);
+      // Don't show error to user for comments, just log it
+      setComments([]);
     } finally {
       setCommentsLoading(false);
     }
