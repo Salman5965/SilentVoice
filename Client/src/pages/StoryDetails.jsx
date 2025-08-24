@@ -88,7 +88,7 @@ const StoryDetails = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await storyService.getStoryById(storyId);
+      const response = await storiesService.getStoryById(storyId);
 
       if (response && response.story) {
         setStory(response.story);
@@ -97,7 +97,11 @@ const StoryDetails = () => {
         setIsBookmarked(response.story.isBookmarked || false);
 
         // Increment view count
-        await storyService.incrementViews(storyId);
+        try {
+          await storiesService.incrementViews(storyId);
+        } catch (error) {
+          console.warn('Failed to increment view count:', error);
+        }
       } else {
         setError("Story not found");
       }
@@ -117,7 +121,7 @@ const StoryDetails = () => {
   const loadComments = async () => {
     try {
       setCommentsLoading(true);
-      const response = await storyService.getComments(storyId);
+      const response = await storiesService.getComments(storyId);
       setComments(response.comments || []);
     } catch (error) {
       console.error("Error loading comments:", error);
@@ -137,7 +141,7 @@ const StoryDetails = () => {
     }
 
     try {
-      await storyService.toggleLike(storyId);
+      await storiesService.toggleLikeStory(storyId);
       setIsLiked(!isLiked);
       setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
 
@@ -168,7 +172,7 @@ const StoryDetails = () => {
     }
 
     try {
-      await storyService.toggleBookmark(storyId);
+      await storiesService.toggleBookmark(storyId);
       setIsBookmarked(!isBookmarked);
 
       toast({
@@ -210,7 +214,7 @@ const StoryDetails = () => {
 
     try {
       setSubmittingComment(true);
-      const response = await storyService.addComment(
+      const response = await storiesService.addComment(
         storyId,
         newComment.trim(),
       );
