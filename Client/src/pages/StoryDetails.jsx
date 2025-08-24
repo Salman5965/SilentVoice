@@ -172,14 +172,14 @@ const StoryDetails = () => {
     }
 
     try {
-      await storiesService.toggleBookmark(storyId);
-      setIsBookmarked(!isBookmarked);
+      const response = await storiesService.toggleBookmark(storyId);
+      setIsBookmarked(response.isBookmarked || !isBookmarked);
 
       toast({
-        title: isBookmarked ? "Bookmark removed" : "Story bookmarked",
-        description: isBookmarked
-          ? "Removed from your bookmarks"
-          : "Added to your bookmarks",
+        title: (response.isBookmarked || !isBookmarked) ? "Story bookmarked" : "Bookmark removed",
+        description: (response.isBookmarked || !isBookmarked)
+          ? "Added to your bookmarks"
+          : "Removed from your bookmarks",
       });
     } catch (error) {
       console.error("Error toggling bookmark:", error);
