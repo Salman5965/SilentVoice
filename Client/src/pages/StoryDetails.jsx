@@ -88,7 +88,10 @@ const StoryDetails = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Loading story with ID:', storyId);
+
       const response = await storiesService.getStoryById(storyId);
+      console.log('Story response:', response);
 
       if (response && response.story) {
         setStory(response.story);
@@ -103,14 +106,15 @@ const StoryDetails = () => {
           console.warn('Failed to increment view count:', error);
         }
       } else {
+        console.error('No story data in response:', response);
         setError("Story not found");
       }
     } catch (error) {
       console.error("Error loading story:", error);
-      setError("Failed to load story");
+      setError(error.message || "Failed to load story");
       toast({
         title: "Error",
-        description: "Failed to load story",
+        description: error.message || "Failed to load story",
         variant: "destructive",
       });
     } finally {
