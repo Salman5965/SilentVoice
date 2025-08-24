@@ -93,7 +93,7 @@ const StoryDetails = () => {
       if (response && response.story) {
         setStory(response.story);
         setIsLiked(response.story.isLiked || false);
-        setLikesCount(response.story.likesCount || 0);
+        setLikesCount(response.story.likeCount || 0);
         setIsBookmarked(response.story.isBookmarked || false);
 
         // Increment view count
