@@ -23,6 +23,7 @@ import {
 
 const router = express.Router();
 
+
 /**
  * @route   GET /api/blogs
  * @desc    Get all published blogs with pagination and filters
@@ -126,4 +127,11 @@ router.delete("/:id", protect, deleteBlog);
  */
 router.post("/:id/like", protect, toggleLikeBlog);
 
+/**
+ * @route   POST /api/blogs/:id/view
+ * @desc    Increment blog view count
+ * @access  Public
+ */
+
 export default router;
+

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Bookmark, BookmarkCheck } from "lucide-react";
@@ -6,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/utils/constant";
 import { useToast } from "@/hooks/use-toast";
+import { bookmarkService } from "@/services/bookmarkService";
 
 const BookmarkButton = ({
   blogId,
@@ -40,9 +42,8 @@ const BookmarkButton = ({
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual bookmark API call
-      // For now, just toggle the state
-      const newBookmarkState = !isBookmarked;
+      const result = await bookmarkService.toggleBookmark(blogId);
+      const newBookmarkState = result.bookmarked;
       setIsBookmarked(newBookmarkState);
 
       toast({

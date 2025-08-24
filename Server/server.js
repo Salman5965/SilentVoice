@@ -15,15 +15,13 @@ const httpServer = createServer(app);
 // Create Socket.IO server
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || [
-      "http://localhost:5173",
-      "http://localhost:3000",
-    ],
+    origin: "http://localhost:5173", // only your frontend URL
     methods: ["GET", "POST"],
     credentials: true,
   },
   transports: ["websocket", "polling"],
 });
+
 
 // Socket.IO middleware for authentication
 io.use(async (socket, next) => {

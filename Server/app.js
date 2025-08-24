@@ -18,7 +18,6 @@ import likeRoutes from "./routes/likes.js";
 import bookmarkRoutes from "./routes/bookmarks.js";
 import uploadRoutes from "./routes/uploads.js";
 import notificationRoutes from "./routes/notifications.js";
-import forumRoutes from "./routes/forum.js";
 import dailyDripRoutes from "./routes/dailyDrip.js";
 import storyRoutes from "./routes/stories.js";
 import exploreRoutes from "./routes/explore.js";
@@ -50,8 +49,7 @@ app.use(
 app.use(
   cors({
     origin: process.env.CLIENT_URL || [
-      "http://localhost:5173",
-      "http://localhost:3000",
+      "http://localhost:5173"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -153,7 +151,6 @@ app.use("/api/likes", likeRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/forum", forumRoutes);
 app.use("/api/daily-drip", dailyDripRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/explore", exploreRoutes);
@@ -162,7 +159,7 @@ app.use("/api/community", communityRoutes);
 // Welcome route
 app.get("/", (req, res) => {
   res.json({
-    message: "Welcome to BlogHub API v2.0",
+    message: "Welcome to SilentVoice API v2.0",
     version: "2.0.0",
     documentation: "/api/docs",
     features: [
