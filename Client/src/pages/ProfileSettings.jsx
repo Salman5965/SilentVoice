@@ -363,16 +363,6 @@ const ProfileSettings = () => {
   return (
     <PageWrapper className="py-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center">
-            <Settings className={`h-8 w-8 mr-3 ${iconColors.info}`} />
-            Profile Settings
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your account, privacy, and notification preferences
-          </p>
-        </div>
 
         {/* Error Alert */}
         {error && (
@@ -1130,3 +1120,9 @@ const ProfileSettings = () => {
 };
 
 export default ProfileSettings;
+
+
+
+
+
+//good to go

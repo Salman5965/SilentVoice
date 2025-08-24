@@ -154,49 +154,7 @@ export const FollowersPage = () => {
   return (
     <PageWrapper className="px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-start space-x-4">
-          <div className="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
-            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
-              <AvatarImage src={user.avatar} alt={user.username} />
-              <AvatarFallback className="text-lg">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold truncate">
-                {getDisplayName()}
-              </h1>
-              <p className="text-muted-foreground truncate">@{user.username}</p>
-
-              {/* Follow Stats */}
-              {followStats && (
-                <div className="flex items-center space-x-3 sm:space-x-4 mt-2 text-sm text-muted-foreground">
-                  <Link
-                    to={`/users/${userId}/followers`}
-                    className="hover:text-foreground font-medium flex-shrink-0"
-                  >
-                    <span className="text-foreground">
-                      {followStats.followersCount}
-                    </span>{" "}
-                    followers
-                  </Link>
-                  <Link
-                    to={`/users/${userId}/following`}
-                    className="hover:text-foreground font-medium flex-shrink-0"
-                  >
-                    <span className="text-foreground">
-                      {followStats.followingCount}
-                    </span>{" "}
-                    following
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
+  
         {/* Navigation Tabs */}
         <div className="flex items-center space-x-4 sm:space-x-6 border-b overflow-x-auto">
           <div className="flex items-center space-x-2 pb-3 border-b-2 border-primary flex-shrink-0">
@@ -230,3 +188,6 @@ export const FollowersPage = () => {
 };
 
 export default FollowersPage;
+
+
+// need some change need follower count to change 

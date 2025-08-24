@@ -15,6 +15,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useDebouncedCallback } from "@/hooks/useDebounce";
 import { ROUTES, DEBOUNCE_DELAY } from "@/utils/constant";
+import NotificationButton from "@/components/notifications/NotificationButton";
 import {
   Search,
   Bell,
@@ -33,6 +34,7 @@ import {
   Users,
   BookOpen,
   HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import { iconColors } from "@/utils/iconColors";
 
@@ -215,8 +217,12 @@ export const Navbar = () => {
     }
   }, 800); // Increased debounce delay to 800ms
 
-  const handleCreatePost = () => {
+  const handleCreateBlog = () => {
     navigate(ROUTES.CREATE_BLOG);
+  };
+
+  const handleCreateStory = () => {
+    navigate("/stories/create");
   };
 
   return (
@@ -247,12 +253,6 @@ export const Navbar = () => {
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Feed
-                </Link>
-                <Link
-                  to="/explore"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Explore
                 </Link>
                 <Link
                   to="/stories"
@@ -462,38 +462,44 @@ export const Navbar = () => {
             </div>
           </div>
 
+          <Link
+            to="/explore"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Explore
+          </Link>
           {/* Actions */}
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                {/* Create Button */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCreatePost}
-                  className="hidden md:flex items-center space-x-2"
-                >
-                  <Plus className={`h-4 w-4 ${iconColors.success}`} />
-                  <span>Create</span>
-                </Button>
-
-                {/* Notifications */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative hidden md:flex"
-                  onClick={() => navigate("/notifications")}
-                >
-                  <Bell className={`h-4 w-4 ${iconColors.notification}`} />
-                  {unreadNotifications > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs"
+                {/* Create Button with Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hidden md:flex items-center space-x-0"
                     >
-                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
-                    </Badge>
-                  )}
-                </Button>
+                      <Plus className={`h-4 w-4 ${iconColors.success}`} />
+                      <span>Create</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={handleCreateBlog}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Write a Blog
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCreateStory}>
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Share a Story
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Real-time Notifications */}
+                <div className="hidden md:block">
+                  <NotificationButton />
+                </div>
 
                 {/* Messages */}
                 <Button
@@ -649,17 +655,33 @@ export const Navbar = () => {
               >
                 Daily Drip
               </Link>
-              <Button
-                variant="ghost"
-                className="justify-start"
-                onClick={() => {
-                  handleCreatePost();
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
-                Create Post
-              </Button>
+              <div className="space-y-1">
+                <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Create
+                </p>
+                <Button
+                  variant="ghost"
+                  className="justify-start w-full"
+                  onClick={() => {
+                    handleCreateBlog();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <FileText className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  Write a Blog
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start w-full"
+                  onClick={() => {
+                    handleCreateStory();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <BookOpen className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
+                  Share a Story
+                </Button>
+              </div>
               <Button
                 variant="ghost"
                 className="justify-start"
@@ -689,3 +711,11 @@ export const Navbar = () => {
     </nav>
   );
 };
+
+
+
+
+
+
+
+//good to go

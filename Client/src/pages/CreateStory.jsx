@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Save,
@@ -13,6 +14,9 @@ import {
   X,
   Play,
   Pause,
+  Video,
+  VideoOff,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +38,7 @@ const CreateStory = () => {
     location: "",
     coverImage: null,
     audioFile: null,
+    videoFile: null,
     isPublic: true,
     allowComments: true,
   });
@@ -43,8 +48,12 @@ const CreateStory = () => {
   const [isPreview, setIsPreview] = useState(false);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [audioPreview, setAudioPreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingVideo, setIsRecordingVideo] = useState(false);
   const [audioRecorder, setAudioRecorder] = useState(null);
+  const [videoRecorder, setVideoRecorder] = useState(null);
+  const [recordingType, setRecordingType] = useState('audio'); // 'audio' or 'video'
   const [errors, setErrors] = useState({});
 
   const { user } = useAuthContext();
@@ -102,6 +111,27 @@ const CreateStory = () => {
     }
   };
 
+  const handleVideoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        // 50MB limit for video
+        toast({
+          title: "File too large",
+          description: "Please select a video file smaller than 50MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, videoFile: file }));
+
+      // Create preview
+      const url = URL.createObjectURL(file);
+      setVideoPreview(url);
+    }
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -138,6 +168,48 @@ const CreateStory = () => {
       audioRecorder.stream.getTracks().forEach((track) => track.stop());
       setAudioRecorder(null);
       setIsRecording(false);
+    }
+  };
+
+  const startVideoRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const file = new File([blob], "recorded-video.webm", {
+          type: "video/webm",
+        });
+        setFormData((prev) => ({ ...prev, videoFile: file }));
+
+        const url = URL.createObjectURL(blob);
+        setVideoPreview(url);
+      };
+
+      recorder.start();
+      setVideoRecorder(recorder);
+      setIsRecordingVideo(true);
+    } catch (error) {
+      toast({
+        title: "Video recording failed",
+        description: "Could not access camera and microphone. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopVideoRecording = () => {
+    if (videoRecorder) {
+      videoRecorder.stop();
+      videoRecorder.stream.getTracks().forEach((track) => track.stop());
+      setVideoRecorder(null);
+      setIsRecordingVideo(false);
     }
   };
 
@@ -179,23 +251,57 @@ const CreateStory = () => {
     try {
       setIsSaving(true);
 
-      const storyData = {
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        isPublished: publishNow,
-        readTime: Math.ceil(formData.content.split(" ").length / 200), // ~200 WPM
-        visibility: formData.isPublic ? "public" : "private",
-        allowComments: formData.allowComments,
-      };
+      // Check if we have file uploads
+      const hasFiles = formData.coverImage || formData.audioFile || formData.videoFile;
 
-      // Only include optional fields if they have values
-      if (formData.coverImage && typeof formData.coverImage === "string") {
-        storyData.coverImage = formData.coverImage.trim();
-      }
+      let storyData;
 
-      // Handle excerpt if provided
-      if (formData.excerpt && formData.excerpt.trim()) {
-        storyData.excerpt = formData.excerpt.trim();
+      if (hasFiles) {
+        // Use FormData for file uploads
+        storyData = new FormData();
+        storyData.append('title', formData.title.trim());
+        storyData.append('content', formData.content.trim());
+        storyData.append('isPublished', publishNow);
+        storyData.append('readTime', Math.ceil(formData.content.split(" ").length / 200));
+        storyData.append('visibility', formData.isPublic ? "public" : "private");
+        storyData.append('allowComments', formData.allowComments);
+
+        // Add optional fields
+        if (formData.excerpt && formData.excerpt.trim()) {
+          storyData.append('excerpt', formData.excerpt.trim());
+        }
+        if (formData.location && formData.location.trim()) {
+          storyData.append('location', formData.location.trim());
+        }
+
+        // Add file uploads
+        if (formData.coverImage && formData.coverImage instanceof File) {
+          storyData.append('coverImage', formData.coverImage);
+        }
+        if (formData.audioFile && formData.audioFile instanceof File) {
+          storyData.append('audioFile', formData.audioFile);
+        }
+        if (formData.videoFile && formData.videoFile instanceof File) {
+          storyData.append('videoFile', formData.videoFile);
+        }
+      } else {
+        // Use JSON for text-only stories
+        storyData = {
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          isPublished: publishNow,
+          readTime: Math.ceil(formData.content.split(" ").length / 200), // ~200 WPM
+          visibility: formData.isPublic ? "public" : "private",
+          allowComments: formData.allowComments,
+        };
+
+        // Add optional fields
+        if (formData.excerpt && formData.excerpt.trim()) {
+          storyData.excerpt = formData.excerpt.trim();
+        }
+        if (formData.location && formData.location.trim()) {
+          storyData.location = formData.location.trim();
+        }
       }
 
       console.log("CreateStory: Sending story data:", storyData);
@@ -493,6 +599,74 @@ const CreateStory = () => {
                           <source src={audioPreview} type="audio/webm" />
                           <source src={audioPreview} type="audio/mpeg" />
                         </audio>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Video Narration */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Video Narration
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoUpload}
+                        className="hidden"
+                        id="video-file"
+                      />
+                      <label htmlFor="video-file">
+                        <Button variant="outline" size="sm" asChild>
+                          <span className="flex items-center gap-2 cursor-pointer">
+                            <Upload className="h-4 w-4" />
+                            Upload Video
+                          </span>
+                        </Button>
+                      </label>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={isRecordingVideo ? stopVideoRecording : startVideoRecording}
+                        className={`flex items-center gap-2 ${isRecordingVideo ? "text-red-500" : ""}`}
+                      >
+                        {isRecordingVideo ? (
+                          <>
+                            <VideoOff className="h-4 w-4" />
+                            Stop Recording
+                          </>
+                        ) : (
+                          <>
+                            <Video className="h-4 w-4" />
+                            Record Video
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {videoPreview && (
+                      <div className="mt-2">
+                        <video controls className="w-full max-w-md h-48 bg-black rounded">
+                          <source src={videoPreview} type="video/webm" />
+                          <source src={videoPreview} type="video/mp4" />
+                          Your browser does not support video playback.
+                        </video>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => {
+                            setVideoPreview(null);
+                            setFormData((prev) => ({
+                              ...prev,
+                              videoFile: null,
+                            }));
+                          }}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Remove Video
+                        </Button>
                       </div>
                     )}
                   </div>

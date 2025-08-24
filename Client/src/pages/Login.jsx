@@ -1,3 +1,252 @@
+// import React, { useEffect, useState } from "react";
+// import { Link, useNavigate, useLocation } from "react-router-dom";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardFooter,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Checkbox } from "@/components/ui/checkbox";
+// import { Alert, AlertDescription } from "@/components/ui/alert";
+// import { useAuthContext } from "@/contexts/AuthContext";
+// import { useForm } from "@/hooks/useForm";
+// import { validateEmail } from "@/utils/validators";
+// import { ROUTES } from "@/utils/constant";
+// import { useToast } from "@/hooks/use-toast";
+// // import OAuthButtons from "@/components/auth/OAuthButtons";
+// import {
+//   Loader2,
+//   Eye,
+//   EyeOff,
+//   AlertTriangle,
+//   Mail,
+//   Shield,
+// } from "lucide-react";
+
+// export const Login = () => {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const { isAuthenticated, login } = useAuthContext();
+//   const { toast } = useToast();
+
+//   // Simple state management
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [rememberMe, setRememberMe] = useState(false);
+
+//   // Redirect target after login
+//   const from = location.state?.from?.pathname || ROUTES.FEED;
+
+//   // Check if user is already authenticated
+//   useEffect(() => {
+//     if (isAuthenticated) {
+//       navigate(from, { replace: true });
+//     }
+//   }, [isAuthenticated, navigate, from]);
+
+//   // Load remembered login state
+//   useEffect(() => {
+//     const remembered = localStorage.getItem("rememberLogin");
+//     if (remembered === "true") {
+//       setRememberMe(true);
+//     }
+//   }, []);
+
+//   // Simplified form validation and submission
+//   const { values, errors, isSubmitting, setValue, handleSubmit } = useForm({
+//     initialValues: {
+//       email: "",
+//       password: "",
+//     },
+//     validate: (values) => {
+//       const errors = {};
+
+//       if (!values.email.trim()) {
+//         errors.email = "Email or username is required";
+//       } else if (values.email.includes("@")) {
+//         const emailError = validateEmail(values.email);
+//         if (emailError) errors.email = emailError;
+//       }
+
+//       if (!values.password) {
+//         errors.password = "Password is required";
+//       }
+
+//       return errors;
+//     },
+//     onSubmit: async (values) => {
+//       try {
+//         const loginData = { ...values, rememberMe };
+//         await login(loginData);
+
+//         localStorage.setItem("rememberLogin", rememberMe.toString());
+
+//         toast({
+//           title: "Welcome Back!",
+//           description: "Login successful.",
+//           duration: 3000,
+//         });
+//       } catch (error) {
+//         console.error("Login error:", error);
+
+//         toast({
+//           title: "Login Failed",
+//           description:
+//             "Invalid credentials. Please check your email and password.",
+//           variant: "destructive",
+//           duration: 5000,
+//         });
+//       }
+//     },
+//   });
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+//       <div className="w-full max-w-md">
+//         <Card className="border-0 shadow-xl">
+//           <CardHeader className="space-y-1 pb-6">
+//             <CardTitle className="text-2xl font-bold text-center">
+//               Welcome back
+//             </CardTitle>
+//             <CardDescription className="text-center text-muted-foreground">
+//               Sign in to your account to continue your writing journey
+//             </CardDescription>
+//           </CardHeader>
+
+//           <form onSubmit={handleSubmit}>
+//             <CardContent className="space-y-4">
+//               {/* Email/Username input */}
+//               <div className="space-y-2">
+//                 <Label htmlFor="email">Email or Username</Label>
+//                 <div className="relative">
+//                   <Input
+//                     id="email"
+//                     type="text"
+//                     placeholder="Enter your email or username"
+//                     value={values.email}
+//                     onChange={(e) => setValue("email", e.target.value)}
+//                     disabled={isSubmitting}
+//                     autoComplete="username"
+//                     autoFocus
+//                     className="pr-10"
+//                   />
+//                   <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+//                 </div>
+//                 {errors.email && (
+//                   <p className="text-sm text-destructive flex items-center">
+//                     <AlertTriangle className="h-3 w-3 mr-1" />
+//                     {errors.email}
+//                   </p>
+//                 )}
+//               </div>
+
+//               {/* Password input */}
+//               <div className="space-y-2">
+//                 <div className="flex items-center justify-between">
+//                   <Label htmlFor="password">Password</Label>
+//                   <Link
+//                     to={ROUTES.FORGOT_PASSWORD}
+//                     className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded"
+//                   >
+//                     Forgot password?
+//                   </Link>
+//                 </div>
+//                 <div className="relative">
+//                   <Input
+//                     id="password"
+//                     type={showPassword ? "text" : "password"}
+//                     placeholder="Enter your password"
+//                     value={values.password}
+//                     onChange={(e) => setValue("password", e.target.value)}
+//                     disabled={isSubmitting}
+//                     autoComplete="current-password"
+//                     className="pr-10"
+//                   />
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowPassword(!showPassword)}
+//                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary rounded"
+//                     disabled={isSubmitting}
+//                     tabIndex={-1}
+//                   >
+//                     {showPassword ? (
+//                       <EyeOff className="h-4 w-4" />
+//                     ) : (
+//                       <Eye className="h-4 w-4" />
+//                     )}
+//                   </button>
+//                 </div>
+//                 {errors.password && (
+//                   <p className="text-sm text-destructive flex items-center">
+//                     <AlertTriangle className="h-3 w-3 mr-1" />
+//                     {errors.password}
+//                   </p>
+//                 )}
+//               </div>
+
+//               {/* Remember me checkbox */}
+//               <div className="flex items-center space-x-2">
+//                 <Checkbox
+//                   id="remember"
+//                   checked={rememberMe}
+//                   onCheckedChange={setRememberMe}
+//                   disabled={isSubmitting}
+//                 />
+//                 <Label
+//                   htmlFor="remember"
+//                   className="text-sm font-normal cursor-pointer"
+//                 >
+//                   Remember me for 30 days
+//                 </Label>
+//               </div>
+//             </CardContent>
+
+//             <CardFooter className="flex flex-col space-y-4 pt-6">
+//               {/* Main login button */}
+//               <Button
+//                 type="submit"
+//                 className="w-full h-11 text-base font-medium"
+//                 disabled={isSubmitting}
+//               >
+//                 {isSubmitting && (
+//                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+//                 )}
+//                 {isSubmitting ? "Signing In..." : "Sign In"}
+//               </Button>
+
+//               {/* OAuth buttons */}
+//               <OAuthButtons disabled={isSubmitting} type="login" />
+
+//               {/* Sign up link */}
+//               <div className="text-center text-sm text-muted-foreground">
+//                 Don't have an account?{" "}
+//                 <Link
+//                   to={ROUTES.REGISTER}
+//                   className="text-primary hover:underline font-medium"
+//                 >
+//                   Create one now
+//                 </Link>
+//               </div>
+//             </CardFooter>
+//           </form>
+//         </Card>
+//       </div>
+//     </div>
+//   );
+// };
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -320,108 +569,14 @@ export const Login = () => {
   const canSubmit = !isSubmitting && !isRateLimited && !isLocked;
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left side - Branding/Features */}
-      <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          <div className="mb-8">
-            <BookOpen className="h-12 w-12 mb-4" />
-            <h1 className="text-4xl font-bold mb-4">WriteNest</h1>
-            <p className="text-xl text-blue-100 mb-8">
-              Where stories come to life and writers find their voice
-            </p>
-          </div>
-
-          {/* Feature highlights */}
-          <div className="space-y-6">
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 rounded-full p-3">
-                <Zap className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Lightning Fast</h3>
-                <p className="text-blue-100">
-                  Instant publishing and real-time collaboration
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 rounded-full p-3">
-                <Users className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Vibrant Community</h3>
-                <p className="text-blue-100">
-                  Connect with writers and readers worldwide
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 rounded-full p-3">
-                <Shield className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Secure & Private</h3>
-                <p className="text-blue-100">
-                  Your data is protected with enterprise-grade security
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Social proof */}
-          <div className="mt-12 pt-8 border-t border-white/20">
-            <div className="flex items-center space-x-2 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                />
-              ))}
-              <span className="text-blue-100">4.9/5 from 10k+ writers</span>
-            </div>
-            <blockquote className="text-blue-100 italic">
-              "WriteNest transformed how I share my stories. The community here
-              is incredible!"
-            </blockquote>
-            <cite className="text-blue-200 text-sm">
-              - Sarah J., Bestselling Author
-            </cite>
-          </div>
-        </div>
-      </div>
-
-      {/* Right side - Login form */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-8 bg-background">
-        <div className="mx-auto w-full max-w-md">
-          {/* Theme toggle */}
-          <div className="flex justify-between items-center mb-8">
-            <div className="lg:hidden">
-              <BookOpen className="h-8 w-8 text-primary" />
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="ml-auto"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          <Card className="border-0 shadow-xl">
-            <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl font-bold text-center">
+    <div className="min-h-screen flex justify-center items-center bg-background px-4 py-8">
+      <div className="w-full max-w-lg">
+          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.03] bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 hover:bg-card/98">
+            <CardHeader className="space-y-4 pb-8 pt-8">
+              <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 Welcome back
               </CardTitle>
-              <CardDescription className="text-center text-muted-foreground">
+              <CardDescription className="text-center text-muted-foreground text-base">
                 Sign in to your account to continue your writing journey
               </CardDescription>
 
@@ -450,7 +605,7 @@ export const Login = () => {
             </CardHeader>
 
             <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 px-8">
                 {/* Email/Username input */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email or Username</Label>
@@ -575,7 +730,7 @@ export const Login = () => {
                 </div>
               </CardContent>
 
-              <CardFooter className="flex flex-col space-y-4 pt-6">
+              <CardFooter className="flex flex-col space-y-6 pt-8 px-8 pb-8">
                 {/* Main login button */}
                 <Button
                   type="submit"
@@ -680,7 +835,6 @@ export const Login = () => {
               </CardFooter>
             </form>
           </Card>
-        </div>
       </div>
     </div>
   );
