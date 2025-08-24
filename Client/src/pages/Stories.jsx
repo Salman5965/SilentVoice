@@ -552,9 +552,9 @@ const Stories = () => {
   const getSortField = (filter) => {
     switch (filter) {
       case "trending":
-        return "viewsCount";
+        return "views";
       case "popular":
-        return "likesCount";
+        return "likeCount";
       case "following":
         return "createdAt";
       case "latest":
@@ -647,13 +647,42 @@ const Stories = () => {
 
   // Story like handler
   const handleLikeStory = async (storyId) => {
-    try {
-      // TODO: Implement story like functionality
+    if (!user) {
       toast({
-        title: "Coming Soon",
-        description: "Story likes will be available soon!",
+        title: "Authentication Required",
+        description: "Please sign in to like stories",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await storiesService.toggleLikeStory(storyId);
+
+      // Update the story in local state
+      setStories((prevStories) =>
+        prevStories.map((story) => {
+          if ((story.id || story._id) === storyId) {
+            return {
+              ...story,
+              isLiked: response.isLiked,
+              likeCount: response.likeCount,
+              likes: response.likeCount, // Keep both for compatibility
+            };
+          }
+          return story;
+        })
+      );
+
+      toast({
+        title: response.isLiked ? "Story liked" : "Story unliked",
+        description: response.isLiked
+          ? "Added to your liked stories"
+          : "Removed from liked stories",
       });
     } catch (error) {
+      console.error("Error toggling story like:", error);
       toast({
         title: "Error",
         description: "Failed to like story. Please try again.",
@@ -758,10 +787,16 @@ const Stories = () => {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => handleLikeStory(story.id || story._id)}
-              className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-red-500 transition-colors"
+              className={`flex items-center space-x-2 text-sm transition-colors ${
+                story.isLiked
+                  ? "text-red-500 hover:text-red-600"
+                  : "text-muted-foreground hover:text-red-500"
+              }`}
             >
-              <Heart className="h-5 w-5" />
-              <span>{story.likesCount || 0}</span>
+              <Heart
+                className={`h-5 w-5 ${story.isLiked ? "fill-current" : ""}`}
+              />
+              <span>{story.likeCount || 0}</span>
             </button>
 
             <button
@@ -769,7 +804,7 @@ const Stories = () => {
               className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-blue-500 transition-colors"
             >
               <MessageCircle className="h-5 w-5" />
-              <span>{story.commentsCount || 0}</span>
+              <span>{story.comments || 0}</span>
             </button>
 
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
