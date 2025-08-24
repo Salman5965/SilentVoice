@@ -78,9 +78,30 @@ const StoryDetails = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
+    console.log('StoryDetails mounted with storyId:', storyId);
+
     if (storyId) {
-      loadStory();
-      loadComments();
+      // Add a timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          console.error('Story loading timed out');
+          setError('Story loading timed out. Please try again.');
+          setLoading(false);
+        }
+      }, 10000); // 10 second timeout
+
+      loadStory().then(() => {
+        loadComments();
+        clearTimeout(timeoutId);
+      }).catch(() => {
+        clearTimeout(timeoutId);
+      });
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      console.error('No storyId provided');
+      setError('Invalid story ID');
+      setLoading(false);
     }
   }, [storyId]);
 
