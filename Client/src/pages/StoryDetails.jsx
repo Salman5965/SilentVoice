@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const StoryDetails = () => {
-  const { storyId } = useParams();
+  const { id: storyId } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthContext();
   const { toast } = useToast();
