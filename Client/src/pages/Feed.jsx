@@ -533,6 +533,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { blogService } from "@/services/blogService";
+import { bookmarkService } from "@/services/bookmarkService";
+import BookmarkButton from "@/components/shared/BookmarkButton";
 import {
   Heart,
   MessageCircle,
@@ -747,6 +749,51 @@ const Feed = () => {
     }
   };
 
+  const handleShare = async (e, post) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const shareData = {
+        title: post.title,
+        text: post.excerpt || post.description || 'Check out this amazing blog post!',
+        url: `${window.location.origin}/blog/${post.slug}`
+      };
+
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        toast({
+          title: "Shared successfully",
+          description: "Post shared via system share",
+        });
+      } else {
+        // Fallback: Copy URL to clipboard
+        await navigator.clipboard.writeText(shareData.url);
+        toast({
+          title: "Link copied",
+          description: "Post link copied to clipboard",
+        });
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        // Fallback: Copy URL to clipboard
+        try {
+          await navigator.clipboard.writeText(`${window.location.origin}/blog/${post.slug}`);
+          toast({
+            title: "Link copied",
+            description: "Post link copied to clipboard",
+          });
+        } catch (clipboardError) {
+          toast({
+            title: "Error",
+            description: "Failed to share post",
+            variant: "destructive",
+          });
+        }
+      }
+    }
+  };
+
   const handleLike = async (postId) => {
     try {
       await blogService.likeBlog(postId);
@@ -908,7 +955,7 @@ const Feed = () => {
               className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-blue-500 transition-colors"
             >
               <MessageCircle className="h-5 w-5" />
-              <span>{post.commentsCount || 0}</span>
+              <span>{post.commentCount || 0}</span>
             </button>
 
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -918,10 +965,18 @@ const Feed = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
-              <Bookmark className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
+            <BookmarkButton
+              blogId={post._id}
+              initialIsBookmarked={post.isBookmarked || false}
+              size="sm"
+              variant="ghost"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => handleShare(e, post)}
+              title="Share this post"
+            >
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
