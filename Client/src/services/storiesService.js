@@ -613,6 +613,81 @@ class StoriesService {
       return [];
     }
   }
+
+  // Increment story view count
+  async incrementViews(storyId) {
+    try {
+      const response = await apiService.post(`/stories/${storyId}/view`);
+
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to increment views");
+    } catch (error) {
+      console.error("Failed to increment views:", error);
+      // Don't throw error as view count is not critical
+      return null;
+    }
+  }
+
+  // Get story comments
+  async getComments(storyId) {
+    try {
+      const response = await apiService.get(`/stories/${storyId}/comments`);
+
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to fetch comments");
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+      // Return empty structure to prevent app from breaking
+      return {
+        comments: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalComments: 0,
+        },
+      };
+    }
+  }
+
+  // Add comment to story
+  async addComment(storyId, content) {
+    try {
+      const response = await apiService.post(`/stories/${storyId}/comments`, {
+        content,
+      });
+
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to add comment");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      throw error;
+    }
+  }
+
+  // Toggle bookmark status for story
+  async toggleBookmark(storyId) {
+    try {
+      const response = await apiService.post(`/stories/${storyId}/bookmark`);
+
+      if (response.status === "success") {
+        return response.data;
+      }
+
+      throw new Error(response.message || "Failed to toggle bookmark");
+    } catch (error) {
+      console.error("Failed to toggle bookmark:", error);
+      throw error;
+    }
+  }
 }
 
 export const storiesService = new StoriesService();
