@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { storyService } from "@/services/storyService";
+import { storiesService } from "@/services/storiesService";
 import { formatDistanceToNow } from "date-fns";
 import {
   Heart,
