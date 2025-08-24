@@ -141,15 +141,15 @@ const StoryDetails = () => {
     }
 
     try {
-      await storiesService.toggleLikeStory(storyId);
-      setIsLiked(!isLiked);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      const response = await storiesService.toggleLikeStory(storyId);
+      setIsLiked(response.isLiked);
+      setLikesCount(response.likeCount);
 
       toast({
-        title: isLiked ? "Story unliked" : "Story liked",
-        description: isLiked
-          ? "Removed from your liked stories"
-          : "Added to your liked stories",
+        title: response.isLiked ? "Story liked" : "Story unliked",
+        description: response.isLiked
+          ? "Added to your liked stories"
+          : "Removed from your liked stories",
       });
     } catch (error) {
       console.error("Error toggling like:", error);
